@@ -16,12 +16,5 @@
     "email": "support@example.com"
   },
   "license": "MIT",
-  "type": "commonjs",
-  "samples": [
-    {
-      "displayName": "Example",
-      "description": "CUiAutoBind Example",
-      "path": "Samples~/Example"
-    }
-  ]
+  "type": "commonjs"
 }
