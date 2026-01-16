@@ -65,16 +65,9 @@ namespace CUiAutoBind
             string className = autoBind.GetUIClassName();
             GameObject targetObj = autoBind.gameObject;
 
-            // 生成当前对象的代码
-            if (config.usePartialClass)
-            {
-                GenerateAutoFile(targetObj, autoBind, className, parentName);
-                GenerateManualFile(targetObj, className, parentName);
-            }
-            else
-            {
-                GenerateSingleFile(targetObj, className, autoBind.GetValidBindings(), parentName);
-            }
+            // 生成当前对象的代码（始终使用 partial 模式）
+            GenerateAutoFile(targetObj, autoBind, className, parentName);
+            GenerateManualFile(targetObj, className, parentName);
 
             // 递归生成子对象（默认总是生成所有子对象的代码）
             List<AutoBind> childAutoBinds = autoBind.GetChildAutoBinds();
@@ -225,28 +218,6 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 生成单个文件（旧模式，不使用 partial）
-        /// </summary>
-        private void GenerateSingleFile(GameObject target, string className, List<AutoBindData> bindings, string parentName = "")
-        {
-            string filePath = GetFilePath(target.name, parentName, config.GetGeneratedFilePath, $"{target.name}.cs");
-
-            // 确保目录存在
-            string directory = Path.GetDirectoryName(filePath);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            // 生成代码内容
-            string codeContent = GenerateSingleFileContent(className, bindings, filePath);
-
-            // 写入文件
-            File.WriteAllText(filePath, codeContent, Encoding.UTF8);
-            Debug.Log($"Single file generated: {filePath}");
-        }
-
-        /// <summary>
         /// 生成自动文件的内容（xxx.Auto.cs）
         /// </summary>
         private string GenerateAutoFileContent(string className, List<AutoBindData> bindings, List<ChildUIInfo> childUIInfos, List<ChildUIInfo> allChildInfos = null)
@@ -324,54 +295,6 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 生成单个文件的内容（旧模式）
-        /// </summary>
-        private string GenerateSingleFileContent(string className, List<AutoBindData> bindings, string existingFilePath)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            // 生成文件头（传入 bindings 以自动收集命名空间）
-            GenerateFileHeader(sb, bindings);
-
-            // 生成命名空间
-            if (!string.IsNullOrEmpty(config.namespaceName))
-            {
-                sb.AppendLine($"namespace {config.namespaceName}");
-                sb.AppendLine("{");
-            }
-
-            // 解析现有的手动代码
-            string manualCode = ParseExistingManualCode(existingFilePath);
-
-            // 生成类声明
-            GenerateClassDeclaration(sb, className);
-
-            // 生成自动绑定区域
-            sb.AppendLine($"    {BindConfig.AutoBindRegionStart}");
-            GenerateFields(sb, bindings);
-            sb.AppendLine($"    {BindConfig.AutoBindRegionEnd}");
-
-            // 添加手动代码区域
-            if (!string.IsNullOrEmpty(manualCode))
-            {
-                sb.AppendLine();
-                sb.AppendLine($"    {BindConfig.ManualRegionStart}");
-                sb.Append(manualCode);
-                sb.AppendLine($"    {BindConfig.ManualRegionEnd}");
-            }
-
-            // 关闭类和命名空间
-            sb.AppendLine("}");
-
-            if (!string.IsNullOrEmpty(config.namespaceName))
-            {
-                sb.AppendLine("}");
-            }
-
-            return sb.ToString();
-        }
-
-        /// <summary>
         /// 生成文件头
         /// </summary>
         private void GenerateFileHeader(StringBuilder sb, List<AutoBindData> bindings)
@@ -436,9 +359,8 @@ namespace CUiAutoBind
         /// </summary>
         private void GenerateClassDeclaration(StringBuilder sb, string className)
         {
-            string partialKeyword = config.usePartialClass ? "partial " : "";
             string inheritance = config.GetClassInheritance();
-            sb.AppendLine($"    public {partialKeyword}class {className}{inheritance}");
+            sb.AppendLine($"    public partial class {className}{inheritance}");
             sb.AppendLine("    {");
         }
 
@@ -487,41 +409,6 @@ namespace CUiAutoBind
                 sb.AppendLine($"        private {componentTypeName} {fieldName};");
                 sb.AppendLine();
             }
-        }
-
-        /// <summary>
-        /// 解析现有的手动代码
-        /// </summary>
-        private string ParseExistingManualCode(string filePath)
-        {
-            if (!File.Exists(filePath))
-                return null;
-
-            string[] lines = File.ReadAllLines(filePath);
-            List<string> manualCodeLines = new List<string>();
-            bool inManualRegion = false;
-
-            foreach (string line in lines)
-            {
-                if (line.Contains(BindConfig.ManualRegionStart))
-                {
-                    inManualRegion = true;
-                    continue;
-                }
-
-                if (line.Contains(BindConfig.ManualRegionEnd))
-                {
-                    inManualRegion = false;
-                    continue;
-                }
-
-                if (inManualRegion)
-                {
-                    manualCodeLines.Add(line);
-                }
-            }
-
-            return manualCodeLines.Count > 0 ? string.Join("\n", manualCodeLines) : null;
         }
     }
 }
