@@ -8,20 +8,20 @@
 
 | 后缀 | 组件类型 |
 |------|---------|
-| `btn_` | Button |
-| `txt_` | Text |
-| `img_` | Image |
-| `tgl_` | Toggle |
-| `slr_` | Slider |
-| `inp_` | InputField |
+| `_btn` | Button |
+| `_txt` | Text |
+| `_img` | Image |
+| `_tgl` | Toggle |
+| `_slr` | Slider |
+| `_inp` | InputField |
 
 **示例：**
 ```
 MainMenu
-├── btn_Start
-├── btn_Settings
-├── txt_Title
-└── img_Bg
+├── Start_btn
+├── Settings_btn
+├── Title_txt
+└── Bg_img
 ```
 
 ### 第2步：添加AutoBind组件
@@ -71,10 +71,10 @@ public partial class MainMenu : MonoBehaviour
 ### 场景结构
 ```
 MainMenu (AutoBind组件)
-├── btn_Start (Button)
-├── btn_Settings (Button)
-├── txt_Title (Text)
-└── img_Bg (Image)
+├── Start_btn (Button)
+├── Settings_btn (Button)
+├── Title_txt (Text)
+└── Bg_img (Image)
 ```
 
 ### 操作步骤
@@ -85,10 +85,10 @@ MainMenu (AutoBind组件)
    ```
    结果：
    ✓ 新增绑定: 4
-     - btn_Start → start
-     - btn_Settings → settings
-     - txt_Title → title
-     - img_Bg → bg
+     - Start_btn → start
+     - Settings_btn → settings
+     - Title_txt → title
+     - Bg_img → bg
    ```
 
 3. **点击"生成绑定代码"**
@@ -176,9 +176,9 @@ MainMenu (AutoBind组件)
 
 示例：
 ```
-✅ btn_Start
-✅ txt_PlayerName
-✅ img_InventoryIcon
+✅ Start_btn
+✅ PlayerName_txt
+✅ InventoryIcon_img
 ❌ Button_Start
 ❌ startButton
 ```
@@ -187,10 +187,10 @@ MainMenu (AutoBind组件)
 对于嵌套UI，在每个Panel上单独添加AutoBind组件：
 ```
 MainMenu (AutoBind)
-├── btn_Start
+├── Start_btn
 └── SettingsPanel (AutoBind)  ← 有自己的AutoBind
-    ├── btn_Close
-    └── slr_Volume
+    ├── Close_btn
+    └── Volume_slr
 ```
 
 这样SettingsPanel的组件不会被MainMenu绑定，避免重复。

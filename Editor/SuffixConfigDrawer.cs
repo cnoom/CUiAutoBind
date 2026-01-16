@@ -139,7 +139,7 @@ namespace CUiAutoBind
             public bool showSearchMode = false;
         }
 
-        private static Dictionary<int, DrawerState> stateMap = new Dictionary<int, DrawerState>();
+        private static Dictionary<string, DrawerState> stateMap = new Dictionary<string, DrawerState>();
         private List<ComponentTypeInfo> componentTypes;
 
         /// <summary>
@@ -147,12 +147,13 @@ namespace CUiAutoBind
         /// </summary>
         private DrawerState GetState(SerializedProperty property)
         {
-            int hashCode = property.propertyPath.GetHashCode();
-            if (!stateMap.ContainsKey(hashCode))
+            // 使用属性路径作为唯一键，避免hashCode冲突
+            string key = property.propertyPath;
+            if (!stateMap.ContainsKey(key))
             {
-                stateMap[hashCode] = new DrawerState();
+                stateMap[key] = new DrawerState();
             }
-            return stateMap[hashCode];
+            return stateMap[key];
         }
 
         /// <summary>
@@ -161,6 +162,8 @@ namespace CUiAutoBind
         public static void ClearStateCache()
         {
             stateMap.Clear();
+            // 同时清理组件类型缓存
+            ComponentTypeScanner.ClearCache();
         }
 
         // 常用后缀名称
