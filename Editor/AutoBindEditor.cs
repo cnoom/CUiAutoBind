@@ -14,7 +14,6 @@ namespace CUiAutoBind
         private SerializedProperty bindingsProperty;
         private SerializedProperty autoBindEnabledProperty;
         private SerializedProperty customClassNameProperty;
-        private SerializedProperty excludedPrefixesProperty;
         private SerializedProperty showBindingListProperty;
 
         /// <summary>
@@ -27,7 +26,6 @@ namespace CUiAutoBind
             bindingsProperty = serializedObject.FindProperty("bindings");
             autoBindEnabledProperty = serializedObject.FindProperty("autoBindEnabled");
             customClassNameProperty = serializedObject.FindProperty("customClassName");
-            excludedPrefixesProperty = serializedObject.FindProperty("excludedPrefixes");
             showBindingListProperty = serializedObject.FindProperty("showBindingList");
 
             // 预加载配置
@@ -40,40 +38,17 @@ namespace CUiAutoBind
 
             AutoBind autoBind = (AutoBind)target;
 
-            EditorGUILayout.HelpBox("CUiAutoBind - UI 自动绑定系统", MessageType.None);
-
             // 显示基本属性
             EditorGUILayout.PropertyField(autoBindEnabledProperty);
 
             EditorGUILayout.Space();
-
-            // 嵌套生成配置
+            
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.LabelField("嵌套生成设置", EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
 
             EditorGUILayout.PropertyField(customClassNameProperty, new GUIContent("自定义类名", "留空则使用 GameObject 名称"));
-            EditorGUILayout.PropertyField(excludedPrefixesProperty, new GUIContent("排除前缀", "要排除的 GameObject 名称前缀（用逗号分隔）"));
-
-            EditorGUI.indentLevel--;
-            EditorGUILayout.Space();
-
-            // 命名约定自动绑定部分
-            EditorGUILayout.LabelField("命名约定自动绑定", EditorStyles.boldLabel);
-
-            // 显示当前配置的后缀规则
-            BindConfig config = ConfigManager.LoadConfig();
-            if (config != null && config.suffixConfigs != null && config.suffixConfigs.Length > 0)
-            {
-                EditorGUILayout.HelpBox($"配置了 {config.suffixConfigs.Length} 个命名规则", MessageType.Info);
-            }
-            else
-            {
-                EditorGUILayout.HelpBox("未配置命名规则，请在配置文件中添加", MessageType.Warning);
-            }
 
             EditorGUILayout.Space();
-
+            
             // 绑定列表标题（使用 Foldout）
             showBindingListProperty.boolValue = EditorGUILayout.Foldout(showBindingListProperty.boolValue, "UI 绑定列表 (" + bindingsProperty.arraySize + ")", true, EditorStyles.boldLabel);
 
@@ -206,16 +181,13 @@ namespace CUiAutoBind
                 return;
             }
 
-            // 获取排除前缀
-            string[] excludedPrefixes = GetExcludedPrefixes(autoBind);
-
             // 统计信息
             int addedCount = 0;
             int skippedCount = 0;
             int notFoundCount = 0;
 
             // 递归遍历所有子对象
-            AutoBindByNamingConventionRecursive(autoBind.transform, autoBind, config, excludedPrefixes, ref addedCount, ref skippedCount, ref notFoundCount);
+            AutoBindByNamingConventionRecursive(autoBind.transform, autoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
 
             // 显示结果
             StringBuilder message = new StringBuilder();
@@ -233,7 +205,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 递归按命名约定自动绑定
         /// </summary>
-        private void AutoBindByNamingConventionRecursive(Transform current, AutoBind parentAutoBind, BindConfig config, string[] excludedPrefixes, ref int addedCount, ref int skippedCount, ref int notFoundCount)
+        private void AutoBindByNamingConventionRecursive(Transform current, AutoBind parentAutoBind, BindConfig config, ref int addedCount, ref int skippedCount, ref int notFoundCount)
         {
             // 跳过父对象自身
             if (current == parentAutoBind.transform)
@@ -241,14 +213,10 @@ namespace CUiAutoBind
                 // 只遍历直接子对象
                 foreach (Transform child in current)
                 {
-                    AutoBindByNamingConventionRecursive(child, parentAutoBind, config, excludedPrefixes, ref addedCount, ref skippedCount, ref notFoundCount);
+                    AutoBindByNamingConventionRecursive(child, parentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
                 }
                 return;
             }
-
-            // 检查排除前缀
-            if (IsExcluded(current.name, excludedPrefixes))
-                return;
 
             // 检查是否有AutoBind组件（如果有，说明这个对象由自己管理，跳过）
             if (current.GetComponent<AutoBind>() != null)
@@ -302,7 +270,7 @@ namespace CUiAutoBind
             // 递归处理子对象
             foreach (Transform child in current)
             {
-                AutoBindByNamingConventionRecursive(child, parentAutoBind, config, excludedPrefixes, ref addedCount, ref skippedCount, ref notFoundCount);
+                AutoBindByNamingConventionRecursive(child, parentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
             }
         }
 
@@ -352,30 +320,6 @@ namespace CUiAutoBind
             }
 
             return fieldName;
-        }
-
-        /// <summary>
-        /// 获取排除前缀数组
-        /// </summary>
-        private string[] GetExcludedPrefixes(AutoBind autoBind)
-        {
-            if (string.IsNullOrEmpty(autoBind.excludedPrefixes))
-                return new string[0];
-
-            return autoBind.excludedPrefixes.Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .ToArray();
-        }
-
-        /// <summary>
-        /// 检查是否被排除
-        /// </summary>
-        private bool IsExcluded(string name, string[] prefixes)
-        {
-            if (prefixes == null || prefixes.Length == 0)
-                return false;
-
-            return prefixes.Any(prefix => name.StartsWith(prefix));
         }
 
         /// <summary>

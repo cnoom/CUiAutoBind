@@ -407,15 +407,12 @@ namespace CUiAutoBind
                 {
                     Undo.RecordObject(autoBind, "Batch Auto Bind By Naming Convention");
 
-                    // 获取排除前缀
-                    string[] excludedPrefixes = GetExcludedPrefixes(autoBind);
-
                     // 执行自动绑定
                     int addedCount = 0;
                     int skippedCount = 0;
                     int notFoundCount = 0;
 
-                    AutoBindByNamingConventionRecursive(autoBind.transform, autoBind, config, excludedPrefixes, ref addedCount, ref skippedCount, ref notFoundCount);
+                    AutoBindByNamingConventionRecursive(autoBind.transform, autoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
 
                     if (addedCount > 0 || skippedCount > 0 || notFoundCount > 0)
                     {
@@ -454,7 +451,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 递归按命名约定自动绑定
         /// </summary>
-        private void AutoBindByNamingConventionRecursive(Transform current, AutoBind parentAutoBind, BindConfig config, string[] excludedPrefixes, ref int addedCount, ref int skippedCount, ref int notFoundCount)
+        private void AutoBindByNamingConventionRecursive(Transform current, AutoBind parentAutoBind, BindConfig config, ref int addedCount, ref int skippedCount, ref int notFoundCount)
         {
             // 跳过父对象自身
             if (current == parentAutoBind.transform)
@@ -462,14 +459,10 @@ namespace CUiAutoBind
                 // 只遍历直接子对象
                 foreach (Transform child in current)
                 {
-                    AutoBindByNamingConventionRecursive(child, parentAutoBind, config, excludedPrefixes, ref addedCount, ref skippedCount, ref notFoundCount);
+                    AutoBindByNamingConventionRecursive(child, parentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
                 }
                 return;
             }
-
-            // 检查排除前缀
-            if (IsExcluded(current.name, excludedPrefixes))
-                return;
 
             // 检查是否有AutoBind组件（如果有，说明这个对象由自己管理，跳过）
             if (current.GetComponent<AutoBind>() != null)
@@ -522,7 +515,7 @@ namespace CUiAutoBind
             // 递归处理子对象
             foreach (Transform child in current)
             {
-                AutoBindByNamingConventionRecursive(child, parentAutoBind, config, excludedPrefixes, ref addedCount, ref skippedCount, ref notFoundCount);
+                AutoBindByNamingConventionRecursive(child, parentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
             }
         }
 
@@ -572,30 +565,6 @@ namespace CUiAutoBind
             }
 
             return fieldName;
-        }
-
-        /// <summary>
-        /// 获取排除前缀数组
-        /// </summary>
-        private string[] GetExcludedPrefixes(AutoBind autoBind)
-        {
-            if (string.IsNullOrEmpty(autoBind.excludedPrefixes))
-                return new string[0];
-
-            return autoBind.excludedPrefixes.Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .ToArray();
-        }
-
-        /// <summary>
-        /// 检查是否被排除
-        /// </summary>
-        private bool IsExcluded(string name, string[] prefixes)
-        {
-            if (prefixes == null || prefixes.Length == 0)
-                return false;
-
-            return prefixes.Any(prefix => name.StartsWith(prefix));
         }
     }
 }

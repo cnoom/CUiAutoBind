@@ -24,11 +24,6 @@ namespace CUiAutoBind
         /// 自定义 UI 类名（留空则使用 GameObject 名称）
         /// </summary>
         public string customClassName = "";
-        
-        /// <summary>
-        /// 要排除的 GameObject 名称前缀（多个用逗号分隔）
-        /// </summary>
-        public string excludedPrefixes = "";
 
         /// <summary>
         /// 是否显示UI绑定列表
@@ -99,16 +94,9 @@ namespace CUiAutoBind
         {
             List<AutoBind> result = new List<AutoBind>();
 
-            // 获取排除前缀
-            string[] prefixes =  GetExcludedPrefixes();
-
             // 遍历所有子对象
             foreach (Transform child in transform)
             {
-                // 检查排除前缀
-                if (IsExcluded(child.name, prefixes))
-                    continue;
-
                 // 获取子对象的 AutoBind 组件
                 AutoBind childAutoBind = child.GetComponent<AutoBind>();
                 if (childAutoBind != null)
@@ -121,30 +109,6 @@ namespace CUiAutoBind
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// 获取排除前缀数组
-        /// </summary>
-        private string[] GetExcludedPrefixes()
-        {
-            if (string.IsNullOrEmpty(excludedPrefixes))
-                return new string[0];
-
-            return excludedPrefixes.Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .ToArray();
-        }
-
-        /// <summary>
-        /// 检查是否被排除
-        /// </summary>
-        private bool IsExcluded(string name, string[] prefixes)
-        {
-            if (prefixes == null || prefixes.Length == 0)
-                return false;
-
-            return prefixes.Any(prefix => name.StartsWith(prefix));
         }
 
         /// <summary>
