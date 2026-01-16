@@ -36,11 +36,6 @@ namespace CUiAutoBind
         public bool usePartialClass = true;
 
         /// <summary>
-        /// 是否在字段上添加注释
-        /// </summary>
-        public bool addFieldComments = true;
-
-        /// <summary>
         /// 额外的命名空间引用（自动添加到生成的代码中）
         /// </summary>
         public string[] additionalNamespaces = new string[0];

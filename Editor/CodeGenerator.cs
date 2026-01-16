@@ -76,15 +76,12 @@ namespace CUiAutoBind
                 GenerateSingleFile(targetObj, className, autoBind.GetValidBindings(), parentName);
             }
 
-            // 递归生成子对象
-            if (autoBind.generateChildren)
+            // 递归生成子对象（默认总是生成所有子对象的代码）
+            List<AutoBind> childAutoBinds = autoBind.GetChildAutoBinds();
+            foreach (var childAutoBind in childAutoBinds)
             {
-                List<AutoBind> childAutoBinds = autoBind.GetChildAutoBinds();
-                foreach (var childAutoBind in childAutoBinds)
-                {
-                    // 当前对象的名称作为子对象的父名称
-                    GenerateRecursiveCode(childAutoBind, targetObj.name);
-                }
+                // 当前对象的名称作为子对象的父名称
+                GenerateRecursiveCode(childAutoBind, targetObj.name);
             }
         }
 
@@ -106,20 +103,30 @@ namespace CUiAutoBind
             }
 
             // 获取子对象 AutoBind 列表及其类名
+            // 只有在 bindings 中显式绑定了子对象时，才生成对应的字段
             List<AutoBind> childAutoBinds = autoBind.GetChildAutoBinds();
             List<ChildUIInfo> childUIInfos = new List<ChildUIInfo>();
 
             foreach (var childAutoBind in childAutoBinds)
             {
-                // 子对象自己定义的类名
-                string childClassName = childAutoBind.GetUIClassName();
-                string childFieldName = GetChildFieldName(childAutoBind);
+                // 检查是否在 bindings 中显式绑定了这个子对象
+                bool isExplicitlyBound = bindings.Exists(b =>
+                    b.IsAutoBindReference() &&
+                    b.component == childAutoBind &&
+                    b.generateField);
 
-                childUIInfos.Add(new ChildUIInfo
+                // 只有显式绑定的子对象才生成字段
+                if (isExplicitlyBound)
                 {
-                    className = childClassName,
-                    fieldName = childFieldName
-                });
+                    string childClassName = childAutoBind.GetUIClassName();
+                    string childFieldName = GetChildFieldName(childAutoBind);
+
+                    childUIInfos.Add(new ChildUIInfo
+                    {
+                        className = childClassName,
+                        fieldName = childFieldName
+                    });
+                }
             }
 
             // 生成代码内容
@@ -474,12 +481,6 @@ namespace CUiAutoBind
 
                 // 普通组件绑定
                 string componentTypeName = StringUtil.GetComponentTypeName(binding.ComponentType);
-
-                // 添加注释
-                if (config.addFieldComments)
-                {
-                    sb.AppendLine($"        // {binding.component.name}");
-                }
 
                 // 普通组件也使用 SerializeField 并在编辑器中赋值
                 sb.AppendLine($"        [SerializeField]");

@@ -14,8 +14,6 @@ namespace CUiAutoBind
         private SerializedProperty bindingsProperty;
         private SerializedProperty autoBindEnabledProperty;
         private SerializedProperty customClassNameProperty;
-        private SerializedProperty generateChildrenProperty;
-        private SerializedProperty maxDepthProperty;
         private SerializedProperty excludedPrefixesProperty;
 
         /// <summary>
@@ -28,8 +26,6 @@ namespace CUiAutoBind
             bindingsProperty = serializedObject.FindProperty("bindings");
             autoBindEnabledProperty = serializedObject.FindProperty("autoBindEnabled");
             customClassNameProperty = serializedObject.FindProperty("customClassName");
-            generateChildrenProperty = serializedObject.FindProperty("generateChildren");
-            maxDepthProperty = serializedObject.FindProperty("maxDepth");
             excludedPrefixesProperty = serializedObject.FindProperty("excludedPrefixes");
 
             // 预加载配置
@@ -55,13 +51,7 @@ namespace CUiAutoBind
             EditorGUI.indentLevel++;
 
             EditorGUILayout.PropertyField(customClassNameProperty, new GUIContent("自定义类名", "留空则使用 GameObject 名称"));
-            EditorGUILayout.PropertyField(generateChildrenProperty, new GUIContent("生成子对象", "是否递归生成子对象的代码"));
-
-            if (generateChildrenProperty.boolValue)
-            {
-                EditorGUILayout.PropertyField(maxDepthProperty, new GUIContent("最大深度", "0 表示无限制"));
-                EditorGUILayout.PropertyField(excludedPrefixesProperty, new GUIContent("排除前缀", "要排除的 GameObject 名称前缀（用逗号分隔）"));
-            }
+            EditorGUILayout.PropertyField(excludedPrefixesProperty, new GUIContent("排除前缀", "要排除的 GameObject 名称前缀（用逗号分隔）"));
 
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();

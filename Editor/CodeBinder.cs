@@ -33,6 +33,9 @@ namespace CUiAutoBind
             string className = autoBind.GetUIClassName();
             GameObject targetGameObject = autoBind.gameObject;
 
+            // 先递归绑定子对象（确保子对象的脚本组件已添加，这样父对象才能引用子对象类型）
+            BindChildComponents(autoBind);
+
             // 尝试获取或添加生成的脚本组件
             Component generatedComponent = GetOrAddGeneratedScriptComponent(targetGameObject, className);
             if (generatedComponent == null)
@@ -52,12 +55,6 @@ namespace CUiAutoBind
             EditorUtility.SetDirty(generatedComponent);
 
             Debug.Log($"CodeBinder: 成功绑定组件到 '{className}'");
-
-            // 递归绑定子对象（如果需要）
-            if (autoBind.generateChildren)
-            {
-                BindChildComponents(autoBind);
-            }
 
             return true;
         }

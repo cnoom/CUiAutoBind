@@ -24,17 +24,7 @@ namespace CUiAutoBind
         /// 自定义 UI 类名（留空则使用 GameObject 名称）
         /// </summary>
         public string customClassName = "";
-
-        /// <summary>
-        /// 是否递归生成子对象的代码
-        /// </summary>
-        public bool generateChildren = true;
-
-        /// <summary>
-        /// 最大递归深度（0 表示无限制）
-        /// </summary>
-        public int maxDepth = 0;
-
+        
         /// <summary>
         /// 要排除的 GameObject 名称前缀（多个用逗号分隔）
         /// </summary>
@@ -94,22 +84,18 @@ namespace CUiAutoBind
         /// </summary>
         public List<AutoBind> GetChildAutoBinds()
         {
-            return GetChildAutoBindsRecursive(0);
+            return GetChildAutoBindsRecursive();
         }
 
         /// <summary>
         /// 递归获取子对象的 AutoBind 组件
         /// </summary>
-        private List<AutoBind> GetChildAutoBindsRecursive(int currentDepth)
+        private List<AutoBind> GetChildAutoBindsRecursive()
         {
             List<AutoBind> result = new List<AutoBind>();
 
-            // 检查最大深度
-            if (maxDepth > 0 && currentDepth >= maxDepth)
-                return result;
-
             // 获取排除前缀
-            string[] prefixes = GetExcludedPrefixes();
+            string[] prefixes =  GetExcludedPrefixes();
 
             // 遍历所有子对象
             foreach (Transform child in transform)
@@ -124,11 +110,8 @@ namespace CUiAutoBind
                 {
                     result.Add(childAutoBind);
 
-                    // 如果启用了子对象生成，递归获取更深的子对象
-                    if (childAutoBind.generateChildren)
-                    {
-                        result.AddRange(childAutoBind.GetChildAutoBindsRecursive(currentDepth + 1));
-                    }
+                    // 递归获取更深的子对象
+                    result.AddRange(childAutoBind.GetChildAutoBindsRecursive());
                 }
             }
 
