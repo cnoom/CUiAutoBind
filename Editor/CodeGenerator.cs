@@ -124,7 +124,7 @@ namespace CUiAutoBind
 
             // 生成代码内容
             string codeContent = GenerateAutoFileContent(className, bindings, childUIInfos, null);
-
+            
             // 写入文件
             File.WriteAllText(filePath, codeContent, Encoding.UTF8);
             Debug.Log($"Auto file generated: {filePath}");
