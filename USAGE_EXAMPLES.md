@@ -30,7 +30,9 @@ MainMenu (AutoBind组件)
    ```
 
 4. **点击"生成绑定代码"**
+   - 编译完成后会自动绑定字段（如未自动绑定，可点击"绑定组件"重试）
    - 生成的字段：
+
      ```csharp
      private Button start;
      private Text title;
