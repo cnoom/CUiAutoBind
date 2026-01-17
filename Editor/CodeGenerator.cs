@@ -69,12 +69,20 @@ namespace CUiAutoBind
             GenerateAutoFile(targetObj, autoBind, className, parentName);
             GenerateManualFile(targetObj, className, parentName);
 
-            // 递归生成子对象（默认总是生成所有子对象的代码）
-            List<AutoBind> childAutoBinds = autoBind.GetChildAutoBinds();
-            foreach (var childAutoBind in childAutoBinds)
+            // 递归生成子对象（只生成在 bindings 中显式绑定的 AutoBind 对象）
+            var bindings = autoBind.GetValidBindings();
+            foreach (var binding in bindings)
             {
-                // 当前对象的名称作为子对象的父名称
-                GenerateRecursiveCode(childAutoBind, targetObj.name);
+                // 检查是否是 AutoBind 绑定
+                if (binding.IsAutoBindReference() && binding.component != null)
+                {
+                    AutoBind childAutoBind = binding.component as AutoBind;
+                    if (childAutoBind != null)
+                    {
+                        // 只递归生成显式绑定的子对象
+                        GenerateRecursiveCode(childAutoBind, targetObj.name);
+                    }
+                }
             }
         }
 

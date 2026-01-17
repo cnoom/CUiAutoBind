@@ -268,15 +268,23 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 递归绑定子对象
+        /// 递归绑定子对象（只绑定在父对象 bindings 中显式绑定的 AutoBind 对象）
         /// </summary>
         private void BindChildComponents(AutoBind parentAutoBind)
         {
-            List<AutoBind> childAutoBinds = parentAutoBind.GetChildAutoBinds();
+            var bindings = parentAutoBind.GetValidBindings();
 
-            foreach (var childAutoBind in childAutoBinds)
+            foreach (var binding in bindings)
             {
-                BindComponents(childAutoBind);
+                // 只绑定在 bindings 中显式绑定的 AutoBind 对象
+                if (binding.IsAutoBindReference() && binding.component != null)
+                {
+                    AutoBind childAutoBind = binding.component as AutoBind;
+                    if (childAutoBind != null)
+                    {
+                        BindComponents(childAutoBind);
+                    }
+                }
             }
         }
 
