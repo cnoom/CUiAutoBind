@@ -13,6 +13,7 @@ namespace CUiAutoBind
     {
         private static BindConfig config;
         private Vector2 scrollPosition;
+        private Vector2 suffixScrollPosition;
 
         [MenuItem("Tools/CUIBind/打开窗口", false, 10)]
         public static void ShowWindow()
@@ -111,7 +112,7 @@ namespace CUiAutoBind
             EditorGUILayout.Space();
 
             // 使用滚动视图显示列表
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(200));
+            suffixScrollPosition = EditorGUILayout.BeginScrollView(suffixScrollPosition, GUILayout.Height(200));
 
             for (int i = 0; i < suffixConfigsProp.arraySize; i++)
             {
