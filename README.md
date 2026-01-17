@@ -22,14 +22,14 @@ Unity UI 自动绑定系统 - 一款高效的 UI 开发工具，通过自动生�
 ### Unity 包安装（推荐）
 
 1. **通过 Packages 目录安装**：
-   - 将整个 `CUIBind` 文件夹复制到 Unity 项目的 `Packages` 目录下
+   - 将整个 `CUiAutoBind` 文件夹复制到 Unity 项目的 `Packages` 目录下
    - Unity 会自动识别并加载该包
 
 2. **通过 manifest.json 安装**：
    - 打开 Unity 项目的 `Packages/manifest.json` 文件
    - 在 `dependencies` 中添加：
      ```json
-     "CUiAutoBind": "file:../Packages/CUIBind"
+     "com.cframework.cuibind": "file:../Packages/CUiAutoBind"
      ```
    - 根据实际路径调整文件路径
 
@@ -37,11 +37,11 @@ Unity UI 自动绑定系统 - 一款高效的 UI 开发工具，通过自动生�
    - 打开 Unity 的 Package Manager 窗口
    - 点击左上角的 "+" 按钮
    - 选择 "Add package from disk"
-   - 浏览并选择 `CUIBind` 文件夹
+   - 浏览并选择 `CUiAutoBind` 文件夹
 
 ### 传统安装方式
 
-将 `CUIBind` 文件夹复制到 Unity 项目的 `Assets` 目录下即可（不推荐，建议使用 Unity 包方式）。
+将 `CUiAutoBind` 文件夹复制到 Unity 项目的 `Assets` 目录下即可（不推荐，建议使用 Unity 包方式）。
 
 ## 快速开始
 
@@ -49,7 +49,7 @@ Unity UI 自动绑定系统 - 一款高效的 UI 开发工具，通过自动生�
 
 首次使用时，系统会自动创建默认配置文件，或者通过以下菜单手动创建：
 
-- 打开菜单 `Tools/CUiAutoBind/打开窗口`
+- 打开菜单 `Tools/CUIBind/打开窗口`
 - 在窗口中点击"创建默认配置"按钮
 
 默认配置文件位置：`Assets/CUIBind/Resources/AutoBindConfig.asset`
@@ -103,40 +103,40 @@ Unity UI 自动绑定系统 - 一款高效的 UI 开发工具，通过自动生�
 
 #### 工作原理
 
-1. 在 `AutoBindConfig` 中配置后缀规则（如 `btn` → Button, `txt` → Text）
-2. 给 GameObject 命名时使用对应后缀（如 `btn_Start`, `txt_Title`, `img_Bg`）
+1. 在 `AutoBindConfig` 中配置后缀规则（如 `_btn` → Button, `_txt` → Text）
+2. 给 GameObject 命名时使用对应后缀（如 `Start_btn`, `Title_txt`, `Bg_img`）
 3. 点击"按命名约定自动绑定"按钮
 4. 系统自动扫描所有子对象，匹配命名规则并添加绑定
-5. 自动将后缀转换为驼峰命名字段名（如 `btn_Start` → `startButton`）
+5. 自动将后缀转换为驼峰命名字段名（如 `Start_btn` → `start`）
 
 #### 默认后缀规则
 
-系统已预置以下常用后缀规则：
+系统已预置以下常用后缀规则（注意后缀以 `_` 开头）：
 
 | 后缀 | 组件类型 | 命名空间 |
 |------|---------|---------|
-| btn | Button | UnityEngine.UI |
-| txt | Text | UnityEngine.UI |
-| img | Image | UnityEngine.UI |
-| tgl | Toggle | UnityEngine.UI |
-| slr | Slider | UnityEngine.UI |
-| inp | InputField | UnityEngine.UI |
-| scr | ScrollRect | UnityEngine.UI |
-| grid | GridLayoutGroup | UnityEngine.UI |
+| _btn | Button | UnityEngine.UI |
+| _txt | Text | UnityEngine.UI |
+| _img | Image | UnityEngine.UI |
+| _tgl | Toggle | UnityEngine.UI |
+| _slr | Slider | UnityEngine.UI |
+| _inp | InputField | UnityEngine.UI |
+| _scr | ScrollRect | UnityEngine.UI |
+| _grid | GridLayoutGroup | UnityEngine.UI |
 
 #### 使用示例
 
 ```
 场景结构：
 MainMenu (AutoBind组件)
-├── btn_Start (Button组件)     → 绑定为: startButton
-├── btn_Settings (Button组件)  → 绑定为: settingsButton
-├── txt_Title (Text组件)       → 绑定为: titleText
-├── txt_Volume (Text组件)      → 绑定为: volumeText
-├── img_Bg (Image组件)         → 绑定为: backgroundImage
+├── Start_btn (Button组件)     → 绑定为: start
+├── Settings_btn (Button组件)  → 绑定为: settings
+├── Title_txt (Text组件)       → 绑定为: title
+├── Volume_txt (Text组件)      → 绑定为: volume
+├── Bg_img (Image组件)         → 绑定为: bg
 └── SettingsPanel (AutoBind组件)  ← 有自己的AutoBind，不会被父对象绑定
-    ├── btn_Close (Button组件)  → SettingsPanel自己绑定: closeButton
-    └── slr_Volume (Slider组件) → SettingsPanel自己绑定: volumeSlider
+    ├── Close_btn (Button组件)  → SettingsPanel自己绑定: close
+    └── Volume_slr (Slider组件) → SettingsPanel自己绑定: volume
 ```
 
 **步骤：**
@@ -149,12 +149,12 @@ MainMenu (AutoBind组件)
 
 在 `AutoBindConfig` 中可以添加或修改后缀规则：
 
-1. 打开 `Tools/CUiAutoBind/打开窗口`
+1. 打开 `Tools/CUIBind/打开窗口`
 2. 在配置中找到 `Suffix Configs` 数组
 3. 添加新规则或修改现有规则：
-   - **Suffix**: 后缀名（如 "btn"）
-   - **Component Type**: 组件类型（如 "Button"）
-   - **Namespace**: 命名空间（如 "UnityEngine.UI"）
+   - **Suffix**: 后缀名（如 `_btn`）
+   - **Component Type**: 组件类型（如 `Button`）
+   - **Namespace**: 命名空间（如 `UnityEngine.UI`）
 
 #### 嵌套绑定规则
 
@@ -206,17 +206,17 @@ Suffix Configs 是一个数组，每个元素定义一个命名规则：
 
 ```csharp
 {
-    "suffix": "btn",              // 后缀名（不区分大小写）
+    "suffix": "_btn",              // 后缀名（不区分大小写）
     "componentType": "Button",    // 组件类型名
     "namespaceName": "UnityEngine.UI"  // 命名空间
 }
 ```
 
 **示例配置：**
-- `btn` → `Button` (UnityEngine.UI)
-- `txt` → `Text` (UnityEngine.UI)
-- `img` → `Image` (UnityEngine.UI)
-- `custom` → `MyCustomComponent` (YourNamespace) - 支持自定义组件
+- `_btn` → `Button` (UnityEngine.UI)
+- `_txt` → `Text` (UnityEngine.UI)
+- `_img` → `Image` (UnityEngine.UI)
+- `_custom` → `MyCustomComponent` (YourNamespace) - 支持自定义组件
 
 ### 父类和接口配置
 
@@ -250,7 +250,7 @@ public partial class MainMenuUI : MonoBehaviour, IUIPanel
 
 ### 嵌套生成（高级功能）
 
-CUIBind 支持递归生成子对象的 UI 代码，适合复杂的 UI 层级结构。
+CUiAutoBind 支持递归生成子对象的 UI 代码，适合复杂的 UI 层级结构。
 
 #### 使用嵌套生成
 
@@ -377,7 +377,7 @@ namespace UI
 using UnityEngine;
 using UnityEngine.UI;
 
-// Auto-generated by CUIBind
+// Auto-generated by CUiAutoBind
 // DO NOT EDIT MANUALLY IN THE AutoBind Generated REGION
 
 namespace UI
@@ -401,7 +401,7 @@ namespace UI
 
 ### 批量生成
 
-打开主窗口（`Tools/CUiAutoBind/打开窗口`），可以：
+打开主窗口（`Tools/CUIBind/打开窗口`），可以：
 
 - 查看场景中所有的 AutoBind 组件
 - 单独为某个 GameObject 生成代码
@@ -411,7 +411,7 @@ namespace UI
 
 ### 嵌套生成
 
-CUIBind 支持递归生成子对象的 UI 代码，适合复杂的 UI 层级结构。
+CUiAutoBind 支持递归生成子对象的 UI 代码，适合复杂的 UI 层级结构。
 
 #### 特性
 
@@ -469,16 +469,21 @@ CUIBind 支持递归生成子对象的 UI 代码，适合复杂的 UI 层级结�
 ## 项目结构
 
 ```
-CUIBind/
+CUiAutoBind/
 ├── Runtime/                    # 运行时代码
 │   ├── AutoBind.cs            # 核心标记组件
 │   ├── AutoBindData.cs        # 绑定数据结构
-│   └── BindConfig.cs          # 配置类
+│   ├── BindConfig.cs          # 配置类
+│   └── StringUtil.cs          # 字符串工具类
 ├── Editor/                     # 编辑器代码
 │   ├── AutoBindEditor.cs      # 组件检视面板
 │   ├── AutoBindWindow.cs      # 主编辑器窗口
 │   ├── AutoBindDataDrawer.cs  # 数据绘制器
-│   └── CodeGenerator.cs       # 代码生成器
+│   ├── CodeBinder.cs          # 代码绑定器
+│   ├── CodeGenerator.cs       # 代码生成器
+│   ├── ConfigManager.cs       # 配置管理器
+│   ├── AutoBindUtility.cs     # 编辑器工具类
+│   └── SuffixConfigDrawer.cs  # 后缀配置绘制器
 └── README.md                   # 本文档
 ```
 
@@ -567,6 +572,9 @@ A: 系统会自动生成 `InitializeChildPanels()` 方法在 `Awake()` 中初始
 - 添加对象排除功能
 - 支持自定义 UI 类名
 - 完善编辑器界面配置
+- 添加后缀命名约定自动绑定功能
+- 实现组件编辑器时自动赋值
+- 添加绑定验证功能
 
 ## 许可证
 

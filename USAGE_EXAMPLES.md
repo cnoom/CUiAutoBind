@@ -5,10 +5,10 @@
 ### 场景结构
 ```
 MainMenu (AutoBind组件)
-├── btn_Start
-├── txt_Title
-├── img_Bg
-└── btn_Exit
+├── Start_btn
+├── Title_txt
+├── Bg_img
+└── Exit_btn
 ```
 
 ### 步骤
@@ -45,24 +45,24 @@ MainMenu (AutoBind组件)
 ### 场景结构
 ```
 MainMenu (AutoBind组件)
-├── btn_Start
-├── txt_Title
+├── Start_btn
+├── Title_txt
 └── SettingsPanel (AutoBind组件)  ← 有自己的AutoBind
-    ├── btn_Close
-    ├── slr_Volume
-    └── txt_Music
+    ├── Close_btn
+    ├── Volume_slr
+    └── Music_txt
 ```
 
 ### 步骤
 
 1. **在根对象 MainMenu 上添加 AutoBind 组件**
    - 点击"按命名约定自动绑定"
-   - ✅ 绑定: `btn_Start`, `txt_Title`
+   - ✅ 绑定: `Start_btn`, `Title_txt`
    - ⏭️  跳过: `SettingsPanel`（因为它有自己的AutoBind组件）
 
 2. **在子对象 SettingsPanel 上添加 AutoBind 组件**
    - 点击"按命名约定自动绑定"
-   - ✅ 绑定: `btn_Close`, `slr_Volume`, `txt_Music`
+   - ✅ 绑定: `Close_btn`, `Volume_slr`, `Music_txt`
 
 3. **生成的代码**
    ```csharp
@@ -85,8 +85,8 @@ MainMenu (AutoBind组件)
 ### 场景结构
 ```
 MainMenu (AutoBind组件)
-├── btn_Start
-├── txt_Title
+├── Start_btn
+├── Title_txt
 ├── _Background (Image)  ← 不想绑定
 └── TMP_Title (Text)     ← 不想绑定
 ```
@@ -97,7 +97,7 @@ MainMenu (AutoBind组件)
    - 在 AutoBind 组件中设置 `Excluded Prefixes` 为: `_Background, TMP_`
 
 2. **点击"按命名约定自动绑定"**
-   - ✅ 绑定: `btn_Start`, `txt_Title`
+   - ✅ 绑定: `Start_btn`, `Title_txt`
    - ⏭️  跳过: `_Background`, `TMP_Title`（匹配排除前缀）
 
 3. **生成的代码**
@@ -116,14 +116,14 @@ MainMenu (AutoBind组件)
 打开 `Tools/CUIBind/打开窗口`，在配置中添加：
 
 ```csharp
-// 添加自定义后缀规则
+// 添加自定义后缀规则（注意使用下划线前缀）
 {
-    "suffix": "slider",
+    "suffix": "_slider",
     "componentType": "Slider",
     "namespaceName": "UnityEngine.UI"
 }
 {
-    "suffix": "input",
+    "suffix": "_input",
     "componentType": "InputField",
     "namespaceName": "UnityEngine.UI"
 }
@@ -132,9 +132,9 @@ MainMenu (AutoBind组件)
 ### 场景结构
 ```
 SettingsPanel (AutoBind组件)
-├── slider_Volume
-├── slider_Music
-└── input_PlayerName
+├── Volume_slider
+├── Music_slider
+└── PlayerName_input
 ```
 
 ### 生成的代码
@@ -151,19 +151,19 @@ private InputField playerName;
 ### 场景结构
 ```
 MainMenu (AutoBind组件)
-├── btn_Start
-├── btn_Settings
-├── txt_Title
-├── img_Bg
+├── Start_btn
+├── Settings_btn
+├── Title_txt
+├── Bg_img
 └── SettingsPanel (AutoBind组件)
-    ├── btn_Close
-    ├── slr_Volume
-    ├── slr_Music
-    ├── txt_Volume
-    ├── txt_Music
+    ├── Close_btn
+    ├── Volume_slr
+    ├── Music_slr
+    ├── Volume_txt
+    ├── Music_txt
     └── AudioPanel (AutoBind组件)
-        ├── btn_Mute
-        └── txt_Status
+        ├── Mute_btn
+        └── Status_txt
 ```
 
 ### 绑定流程
@@ -171,29 +171,29 @@ MainMenu (AutoBind组件)
 **第1步: 在 MainMenu 上自动绑定**
 ```
 ✓ 新增绑定: 4
-  - btn_Start → start
-  - btn_Settings → settings
-  - txt_Title → title
-  - img_Bg → bg
+  - Start_btn → start
+  - Settings_btn → settings
+  - Title_txt → title
+  - Bg_img → bg
 ⏭️  跳过: SettingsPanel (有自己的AutoBind)
 ```
 
 **第2步: 在 SettingsPanel 上自动绑定**
 ```
 ✓ 新增绑定: 5
-  - btn_Close → close
-  - slr_Volume → volume
-  - slr_Music → music
-  - txt_Volume → volumeText
-  - txt_Music → musicText
+  - Close_btn → close
+  - Volume_slr → volume
+  - Music_slr → music
+  - Volume_txt → volumeText
+  - Music_txt → musicText
 ⏭️  跳过: AudioPanel (有自己的AutoBind)
 ```
 
 **第3步: 在 AudioPanel 上自动绑定**
 ```
 ✓ 新增绑定: 2
-  - btn_Mute → mute
-  - txt_Status → status
+  - Mute_btn → mute
+  - Status_txt → status
 ```
 
 ### 生成的代码
@@ -260,8 +260,8 @@ InventoryPanel (AutoBind组件)
 系统自动将对象名称转换为驼峰命名字段名：
 
 1. **移除后缀**
-   - `btn_Start` → `Start`
-   - `txt_PlayerName` → `PlayerName`
+   - `Start_btn` → `Start`
+   - `PlayerName_txt` → `PlayerName`
 
 2. **首字母小写**
    - `Start` → `start`
@@ -271,15 +271,15 @@ InventoryPanel (AutoBind组件)
 
 | 对象名称 | 后缀 | 字段名 |
 |---------|------|--------|
-| `btn_Start` | btn | `start` |
-| `btn_Settings` | btn | `settings` |
-| `txt_Title` | txt | `title` |
-| `txt_PlayerName` | txt | `playerName` |
-| `img_Bg` | img | `bg` |
-| `img_Icon` | img | `icon` |
-| `slr_Volume` | slr | `volume` |
-| `tgl_Mute` | tgl | `mute` |
-| `inp_Name` | inp | `name` |
+| `Start_btn` | _btn | `start` |
+| `Settings_btn` | _btn | `settings` |
+| `Title_txt` | _txt | `title` |
+| `PlayerName_txt` | _txt | `playerName` |
+| `Bg_img` | _img | `bg` |
+| `Icon_img` | _img | `icon` |
+| `Volume_slr` | _slr | `volume` |
+| `Mute_tgl` | _tgl | `mute` |
+| `Name_inp` | _inp | `name` |
 
 ---
 
@@ -287,22 +287,22 @@ InventoryPanel (AutoBind组件)
 
 ### 1. 命名规范
 
-**推荐的命名方式：**
+**推荐的命名方式（后缀模式）：**
 ```
-✅ btn_Start          (按钮)
-✅ txt_Title          (文本)
-✅ img_Icon           (图片)
-✅ slr_Volume         (滑块)
-✅ tgl_Enable         (开关)
-✅ inp_Search         (输入框)
-✅ scr_Content        (滚动区域)
-✅ grid_Items         (网格布局)
+✅ Start_btn          (按钮)
+✅ Title_txt          (文本)
+✅ Icon_img           (图片)
+✅ Volume_slr         (滑块)
+✅ Enable_tgl         (开关)
+✅ Search_inp         (输入框)
+✅ Content_scr        (滚动区域)
+✅ Items_grid         (网格布局)
 ```
 
 **不推荐的命名方式：**
 ```
-❌ Button_Start       (类型后缀，不推荐)
-❌ Text_Title         (类型后缀，不推荐)
+❌ Button_Start       (类型前缀，不推荐)
+❌ Text_Title         (类型前缀，不推荐)
 ❌ startButton        (驼峰命名，无法自动识别)
 ```
 
@@ -325,13 +325,13 @@ Background_Image    ← 被排除
 ```
 RootUI (AutoBind)
 ├── HeaderPanel (AutoBind)   ← 独立管理
-│   ├── btn_Back
-│   └── txt_Title
+│   ├── Back_btn
+│   └── Title_txt
 ├── ContentPanel (AutoBind) ← 独立管理
-│   ├── slr_Volume
-│   └── tgl_Enable
+│   ├── Volume_slr
+│   └── Enable_tgl
 └── FooterPanel (AutoBind)  ← 独立管理
-    └── btn_Confirm
+    └── Confirm_btn
 ```
 
 **优势：**
@@ -345,14 +345,14 @@ RootUI (AutoBind)
 ```csharp
 // AutoBindConfig
 {
-    "suffix": "progress",
+    "suffix": "_progress",
     "componentType": "ProgressBar",
     "namespaceName": "Game.UI"
 }
 
 // 场景中
 LoadingPanel (AutoBind)
-└── progress_Loading  (ProgressBar组件)
+└── Loading_progress  (ProgressBar组件)
 
 // 生成的字段
 private ProgressBar loading;
@@ -365,14 +365,14 @@ private ProgressBar loading;
 ### Q1: 点击"按命名约定自动绑定"没有反应？
 
 **A:** 请检查：
-1. 配置文件中是否已添加命名规则
-2. 子对象名称是否匹配后缀规则
+1. 配置文件中是否已添加命名规则（注意使用下划线前缀，如 `_btn`）
+2. 子对象名称是否匹配后缀规则（使用后缀模式，如 `Start_btn`）
 3. 子对象上是否有对应的组件
 
 ### Q2: 为什么有些子对象没有被绑定？
 
 **A:** 可能的原因：
-1. 子对象名称不匹配任何后缀规则
+1. 子对象名称不匹配任何后缀规则（检查是否使用下划线前缀，如 `_btn`）
 2. 子对象有匹配排除前缀
 3. 子对象有自己的AutoBind组件
 4. 子对象上没有对应的组件
@@ -386,7 +386,7 @@ private ProgressBar loading;
 **A:**
 1. 打开 `Tools/CUIBind/打开窗口`
 2. 在配置的 `Suffix Configs` 数组中添加新规则
-3. 填写：Suffix（后缀）、Component Type（组件类型）、Namespace（命名空间）
+3. 填写：Suffix（后缀，如 `_btn`）、Component Type（组件类型）、Namespace（命名空间）
 4. 保存配置
 
 ### Q5: 批量绑定时如何查看每个对象的绑定结果？
@@ -397,7 +397,7 @@ private ProgressBar loading;
 
 **A:** 检查命名转换规则：
 - 系统会自动移除后缀并首字母小写
-- 例如：`btn_StartGame` → `startGame`
+- 例如：`StartGame_btn` → `startGame`
 - 可以手动在AutoBind组件中调整字段名
 
 ---
@@ -411,7 +411,7 @@ private ProgressBar loading;
 [SerializeField] private Button criticalButton;
 
 // 常规组件按命名约定自动绑定
-// btn_Start, txt_Title, img_Bg 等自动识别
+// Start_btn, Title_txt, Bg_img 等自动识别
 ```
 
 ### 2. 使用排除前缀管理装饰性对象
@@ -421,8 +421,8 @@ private ProgressBar loading;
 
 场景：
 MainMenu (AutoBind)
-├── btn_Start           ← 绑定
-├── txt_Title           ← 绑定
+├── Start_btn           ← 绑定
+├── Title_txt           ← 绑定
 ├── _DecorativeIcon     ← 排除（装饰性）
 └── DecorativeBg        ← 排除（装饰性）
 ```
@@ -430,14 +430,14 @@ MainMenu (AutoBind)
 ### 3. 自定义后缀规则提高效率
 
 ```csharp
-// 为项目特有的组件配置后缀
+// 为项目特有的组件配置后缀（使用下划线前缀）
 {
-    "suffix": "stat",
+    "suffix": "_stat",
     "componentType": "StatBar",
     "namespaceName": "Game.UI"
 }
 {
-    "suffix": "card",
+    "suffix": "_card",
     "componentType": "CardView",
     "namespaceName": "Game.UI"
 }
