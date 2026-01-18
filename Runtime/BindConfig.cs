@@ -170,6 +170,7 @@ namespace CUiAutoBind
         /// </summary>
         public SuffixConfig[] suffixConfigs = new SuffixConfig[]
         {
+            new SuffixConfig { suffix = "_bind", componentType = new ComponentTypeSelector("AutoBind", "CUiAutoBind") },
             new SuffixConfig { suffix = "_btn", componentType = new ComponentTypeSelector("Button", "UnityEngine.UI") },
             new SuffixConfig { suffix = "_txt", componentType = new ComponentTypeSelector("Text", "UnityEngine.UI") },
             new SuffixConfig { suffix = "_img", componentType = new ComponentTypeSelector("Image", "UnityEngine.UI") },

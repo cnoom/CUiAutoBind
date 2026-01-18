@@ -24,10 +24,6 @@ namespace CUiAutoBind
                 return;
             }
 
-            // 检查是否有AutoBind组件（如果有，说明这个对象由自己管理，跳过）
-            if (current.GetComponent<AutoBind>() != null)
-                return;
-
             // 检查是否匹配命名约定
             SuffixConfig matchedSuffix = null;
             foreach (var suffixConfig in config.suffixConfigs)
@@ -48,7 +44,7 @@ namespace CUiAutoBind
                 {
                     Component component = current.GetComponent(componentType);
 
-                    if (component != null)
+                    if (component)
                     {
                         // 生成字段名（将后缀转换为驼峰命名）
                         string fieldName = ConvertToFieldName(current.name, matchedSuffix.suffix);
@@ -71,6 +67,14 @@ namespace CUiAutoBind
                         Debug.LogWarning($"对象 '{current.name}' 匹配后缀 '{matchedSuffix.suffix}'，但未找到对应的 '{matchedSuffix.componentType.ComponentType}' 组件");
                     }
                 }
+            }
+            
+            // 如果当前对象有 AutoBind 组件，则其子对象由自己管理
+            AutoBind currentAutoBind = current.GetComponent<AutoBind>();
+            if (currentAutoBind != null)
+            {
+                AutoBindByNamingConventionRecursive(current, currentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
+                return;
             }
 
             // 递归处理子对象
