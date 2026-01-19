@@ -21,7 +21,9 @@ Use this skill when:
 - Setting up CUiAutoBind in a Unity project
 - Creating or modifying UI bindings with the AutoBind component
 - Configuring generation parameters (namespace, base class, interfaces)
+- Configuring suffix naming rules for automatic binding
 - Generating or updating binding code
+- Working with nested UI structures and hierarchical code generation
 - Troubleshooting issues with code generation or binding
 - Extending the system with custom components
 
@@ -39,79 +41,177 @@ Binding data structure containing:
 - `fieldName`: The generated field name
 - `generateField`: Boolean flag to control field generation
 
+### SuffixConfig
+Naming convention rule for automatic binding:
+- `suffix`: Suffix pattern (e.g., "_btn", "_txt")
+- `componentType`: Component type selector with full type path
+
 ### BindConfig (ScriptableObject)
 Configuration asset managing code generation parameters:
 - `namespaceName`: Namespace for generated code (default: "UI")
 - `basePath`: Base path for file generation (default: "Scripts/UI/Auto/")
 - `baseClass`: Base class for generated classes (default: "MonoBehaviour")
 - `interfaces`: Array of interfaces to implement
-- `usePartialClass`: Use partial class for incremental updates (default: true)
-- `addFieldComments`: Add comments to generated fields (default: true)
+- `additionalNamespaces`: Additional using statements to include in generated code
+- `suffixConfigs`: Array of SuffixConfig for naming convention auto-binding
 
 ## Workflow
 
 ### Setting Up CUiAutoBind
 
-1. Install the package by copying the CUiAutoBind folder to the project's Assets directory
-2. Open the editor window via `Tools/CUiAutoBind/打开窗口`
-3. Create or verify the AutoBindConfig in `Assets/CUiAutoBind/Resources/AutoBindConfig.asset`
+**Installation Methods:**
+
+1. **Unity Package Installation (Recommended)**:
+   - Copy CUiAutoBind folder to project's `Packages` directory
+   - Unity will automatically load it
+   - Or add to `Packages/manifest.json`:
+     ```json
+     "com.cframework.cuibind": "file:../Packages/CUiAutoBind"
+     ```
+
+2. **Package Manager**:
+   - Open Unity Package Manager
+   - Click "+" → "Add package from disk"
+   - Select CUiAutoBind folder
+
+3. **Traditional Installation** (Not recommended):
+   - Copy to `Assets` directory
+
+**Initial Setup:**
+- Open editor window via `Tools/CUIBind/打开窗口`
+- Create default config via the window
+- Config location: `Assets/CUIBind/Resources/AutoBindConfig.asset`
 
 ### Creating UI Bindings
 
-**Option 1: Manual Binding**
-1. Select the UI GameObject
-2. Add the AutoBind component
-3. Click "添加新绑定" to create a new binding entry
-4. Select the component and specify the field name
+**Three Binding Modes:**
 
-**Option 2: Automatic Binding**
-1. Select the UI GameObject
-2. Add the AutoBind component
-3. Click "从当前 GameObject 添加组件" to auto-detect components
-4. Review and adjust the generated field names as needed
+**1. Manual Drag Binding**
+- Add AutoBind component to GameObject
+- Click "添加新绑定" to manually add bindings
+- Select components and specify field names
+- Suitable for precise control over specific components
+
+**2. Suffix Auto Binding (Recommended)**
+- Name GameObjects with suffixes following conventions:
+  - `_btn` → Button
+  - `_txt` → Text
+  - `_img` → Image
+  - `_tgl` → Toggle
+  - `_slr` → Slider
+  - `_inp` → InputField
+- Click "按命名约定自动绑定" to auto-bind all children
+- Extremely fast for large UI structures
+- Auto-converts suffix to camelCase: `Start_btn` → `start`
+
+**3. Mixed Binding**
+- Combines manual and suffix auto binding
+- First use suffix auto-binding for most components
+- Then manually add special components or adjust specific bindings
+- Flexible approach for complex UI structures
+
+**Auto-Binding from GameObject:**
+- Click "从当前 GameObject 添加组件" to scan all components
+- Useful when you want to bind multiple components at once
 
 ### Generating Code
 
 **Single GameObject**
-- In the AutoBind component Inspector, click "生成绑定代码"
+- In AutoBind component Inspector, click "生成绑定代码"
 
 **Batch Generation**
-- Open the AutoBind window (`Tools/CUiAutoBind/打开窗口`)
-- Review the list of AutoBind components in the scene
+- Open the AutoBind window (`Tools/CUIBind/打开窗口`)
+- Review all AutoBind components in the scene
 - Click individual "生成代码" buttons or "全部生成" for batch processing
+
+**Batch Auto-Binding**
+- In the main window, click "批量按命名约定自动绑定"
+- Automatically binds all UI objects in the scene using suffix rules
+- Fastest way to set up multiple UI panels
 
 ### Customizing Generated Code
 
-Generated files use partial class structure with two regions:
+**Dual-File Generation (Default & Recommended)**
 
-**AutoBind Generated Region**
-```
-#region AutoBind Generated
-public Button startButton;
-public Text titleText;
-#endregion AutoBind Generated
-```
-- Do NOT manually edit this region
-- Content is overwritten on regeneration
+CUiAutoBind generates two files using partial class:
 
-**Manual Code Region**
-```
-#region Manual Code
-private void Start() {
-    startButton.onClick.AddListener(OnStartClick);
+**1. Auto-Generated File (GameObjectName.Auto.cs)**
+- Automatically generated - DO NOT EDIT
+- Contains serialized field declarations
+- Fully overwritten on regeneration
+
+Example:
+```csharp
+// Auto-generated by CUIBind
+// DO NOT EDIT MANUALLY
+
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace UI
+{
+    public partial class MainMenuUI : MonoBehaviour
+    {
+        [SerializeField]
+        private Button startButton;
+
+        [SerializeField]
+        private Text titleText;
+    }
 }
-#endregion Manual Code
 ```
-- Add all custom logic here
-- Content is preserved on regeneration
+
+**2. Manual File (GameObjectName.cs)**
+- Created on first generation, can be freely edited
+- Contains all custom logic and methods
+- Never overwritten on regeneration
+
+Example:
+```csharp
+// Manual file - free to edit
+// Auto-file regeneration won't affect this
+
+using UnityEngine;
+
+namespace UI
+{
+    public partial class MainMenuUI : MonoBehaviour
+    {
+        private void Start()
+        {
+            startButton.onClick.AddListener(OnStartClick);
+        }
+
+        private void OnStartClick()
+        {
+            Debug.Log("Start button clicked!");
+        }
+    }
+}
+```
+
+**Editor-Time Auto-Assignment:**
+- Fields use `[SerializeField] private` modifier
+- Components automatically assigned in editor after code generation
+- No runtime GetComponent() calls needed
+- Improves performance at runtime
+- Sub-object references also auto-assigned
 
 ### Incremental Updates
 
+**Dual-File Mode (Default):**
 When UI structure changes:
 1. Modify AutoBind component bindings (add/remove/edit)
-2. Regenerate code using the same method
-3. System updates AutoBind Generated region
-4. Manual Code region remains intact
+2. Click "生成绑定代码" to regenerate
+3. System completely overwrites `GameObjectName.Auto.cs`
+4. `GameObjectName.cs` remains completely untouched
+5. Editor automatically re-assigns new bindings to fields
+
+**Advantages of Dual-File Mode:**
+- ✅ Zero risk of losing manual code
+- ✅ Clear separation of concerns
+- ✅ No region markers needed
+- ✅ Faster regeneration
 
 ## Configuration Examples
 
@@ -149,21 +249,118 @@ namespace GameUI {
 }
 ```
 
+### Suffix Configuration for Auto-Binding
+
+Suffix configs define naming rules for automatic binding:
+
+```csharp
+Suffix Configs:
+[
+    {
+        "suffix": "_btn",
+        "componentType": "Button",
+        "namespaceName": "UnityEngine.UI"
+    },
+    {
+        "suffix": "_txt",
+        "componentType": "Text",
+        "namespaceName": "UnityEngine.UI"
+    },
+    {
+        "suffix": "_custom",
+        "componentType": "MyCustomComponent",
+        "namespaceName": "MyNamespace"
+    }
+]
+```
+
+**Usage:**
+- Name GameObject: `Start_btn`
+- Auto-bind generates: `private Button start;`
+- Supports both Unity built-in and custom components
+
+**Default Suffixes:**
+- `_btn` → Button
+- `_txt` → Text
+- `_img` → Image
+- `_tgl` → Toggle
+- `_slr` → Slider
+- `_inp` → InputField
+- `_scr` → ScrollRect
+- `_grid` → GridLayoutGroup
+
+## Configuration Parameters
+
+### BindConfig Properties
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `namespaceName` | Namespace for generated classes | `"UI"` |
+| `basePath` | Base path for file generation (relative to Assets/) | `"Scripts/UI/Auto/"` |
+| `baseClass` | Base class for generated UI classes | `"MonoBehaviour"` |
+| `interfaces` | Array of interfaces to implement | `[]` (empty) |
+| `additionalNamespaces` | Additional namespaces to include in generated code | `[]` (empty) |
+| `suffixConfigs` | Array of suffix naming rules for auto-binding | 8 default rules |
+
+### AutoBind Component Options
+
+Each AutoBind component can be configured with:
+
+| Option | Description |
+|--------|-------------|
+| `bindings` | List of AutoBindData entries (component → field name mappings) |
+| `customClassName` | Override auto-generated class name (empty = use GameObject name) |
+
+### AutoBindData Properties
+
+Each binding entry contains:
+- `component`: The Component to bind (or AutoBind component for nested UI)
+- `fieldName`: The generated field name
+- `generateField`: Whether to generate this field (can be toggled to exclude)
+
 ## Code Generation Details
 
-### File Structure
-Generated files are placed at: `{basePath}/{GameObjectName}/{GameObjectName}.cs`
+### File Structure (Dual-File Mode)
+
+Generated files are placed at: `{basePath}/{GameObjectName}/`
 
 Example: For GameObject "MainMenu" with default config:
-- Path: `Scripts/UI/Auto/MainMenu/MainMenu.cs`
+- Auto file: `Scripts/UI/Auto/MainMenu/MainMenu.Auto.cs`
+- Manual file: `Scripts/UI/Auto/MainMenu/MainMenu.cs`
+
+**Nested UI Structure:**
+```
+MainMenu (AutoBind)
+├── Start_btn
+└── SettingsPanel (AutoBind)
+    ├── Close_btn
+    └── Volume_slr
+```
+
+Generated files:
+```
+Scripts/UI/Auto/MainMenu/
+├── MainMenu.Auto.cs           (Root object)
+├── MainMenu.cs
+└── SettingsPanel/
+    ├── SettingsPanel.Auto.cs  (Child object)
+    └── SettingsPanel.cs
+```
 
 ### Field Naming
-- Component types automatically convert to camelCase
-- Common abbreviations: "TextMeshPro" → "TMP", "Component" → ""
+
+**Auto-Generated from GameObject:**
+- GameObject names convert to camelCase
+- Suffix removed during conversion
 - Examples:
-  - Button → button
-  - TMP_Text → tmpText
-  - RawImage → rawImage
+  - `Start_btn` → `start`
+  - `PlayerName_txt` → `playerName`
+  - `Background_img` → `background`
+
+**Component Type Conversion:**
+- Not directly used in field names (uses GameObject name)
+- Used for namespace import generation
+- Full type name stored in binding data for editor
 
 ### Component Type Support
 All Component-derived types are supported:
@@ -175,32 +372,45 @@ All Component-derived types are supported:
 
 ### Generated Code Not Found
 - Ensure the generated class name matches GameObject name
-- Check that the file exists at the expected path
+- Check that files exist at: `{basePath}/{GameObjectName}/`
 - Verify namespace settings match usage location
 
 ### Manual Code Disappears
-- Confirm manual code is in `#region Manual Code` section
-- Check that region tags are properly formatted
-- Verify `usePartialClass` is enabled in config
+- **Dual-File Mode**: Should not happen - manual file is never overwritten
+- Verify both files exist: `GameObjectName.Auto.cs` and `GameObjectName.cs`
 
 ### Compilation Errors
 - Check for duplicate field names in bindings
 - Ensure component types are valid and accessible
 - Verify namespace and using statements are correct
+- Check that partial class declarations match
 
-### Component Not Detected
-- Ensure the component is added to the GameObject
-- Check that the component derives from Component
-- Verify the component is not abstract or an interface
+### Component Not Detected in Auto-Binding
+- Ensure GameObject names match suffix patterns (e.g., `Button_btn`)
+- Verify the component actually exists on the GameObject
+- Check suffix config for correct component types and namespaces
+
+### Fields Not Assigned in Editor
+- Wait for script compilation after generation
+- Click "绑定组件" button to manually trigger assignment
+- Check for compilation errors preventing auto-assignment
+
+### Nested UI Issues
+- Ensure child panels have their own AutoBind component
+- Verify child AutoBind is explicitly bound in parent's bindings list
+- Check that subdirectories were created correctly
 
 ## Best Practices
 
-1. **Use Partial Classes**: Always keep custom logic in the Manual Code region
-2. **Descriptive Field Names**: Adjust auto-generated names to be more descriptive
-3. **Consistent Namespace**: Use the same namespace across all generated files
-4. **Base Class Pattern**: Create a base UI class for common functionality
-5. **Regular Regeneration**: Regenerate after structural UI changes
-6. **Version Control**: Include generated files in version control
+1. **Use Suffix Auto-Binding**: Fastest way to set up new UI panels
+2. **Consistent Naming**: Follow suffix conventions across your project
+3. **Dual-File Mode**: Leverage partial classes to separate generated and manual code
+4. **Descriptive GameObject Names**: Use clear names for auto-generated fields
+5. **Nested Structure**: Add AutoBind to child panels to avoid duplicate bindings
+6. **Editor-Time Assignment**: Rely on auto-assignment for better runtime performance
+7. **Regular Regeneration**: Regenerate after UI structure changes
+8. **Version Control**: Include both Auto and Manual files in version control
+9. **Custom Suffix Rules**: Add project-specific components to suffix configs
 
 ## Reference Files
 
@@ -214,6 +424,9 @@ For detailed implementation information, consult:
 ## Notes
 
 - The system uses `ExecuteAlways` on AutoBind for editor-time operation
-- Generated code uses `public` fields for direct access (consider changing to properties if needed)
-- The system preserves user code through region-based parsing
-- Config files are stored as ScriptableObject assets for easy version control
+- Generated fields use `[SerializeField] private` - visible in Inspector, not accessible to other scripts
+- Dual-file mode completely separates generated and manual code
+- Editor-time auto-assignment improves runtime performance (no GetComponent calls)
+- Config files are ScriptableObject assets for easy version control
+- Supports recursive code generation for nested UI structures
+- Auto-binding skips child objects with their own AutoBind components to avoid duplicates
