@@ -137,8 +137,7 @@ namespace CUiAutoBind
     /// <summary>
     /// AutoBind 配置类，用于管理代码生成参数
     /// </summary>
-    [CreateAssetMenu(fileName = "AutoBindConfig", menuName = "CUiAutoBind/Config")]
-    public class BindConfig : ScriptableObject
+    public class UiBindConfig : ScriptableObject
     {
         /// <summary>
         /// 命名空间名称

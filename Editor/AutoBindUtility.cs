@@ -11,15 +11,15 @@ namespace CUiAutoBind
         /// <summary>
         /// 递归按命名约定自动绑定
         /// </summary>
-        public static void AutoBindByNamingConventionRecursive(Transform current, AutoBind parentAutoBind, BindConfig config, ref int addedCount, ref int skippedCount, ref int notFoundCount)
+        public static void AutoBindByNamingConventionRecursive(Transform current, UiAutoBind parentUiAutoBind, UiBindConfig config, ref int addedCount, ref int skippedCount, ref int notFoundCount)
         {
             // 跳过父对象自身
-            if (current == parentAutoBind.transform)
+            if (current == parentUiAutoBind.transform)
             {
                 // 只遍历直接子对象
                 foreach (Transform child in current)
                 {
-                    AutoBindByNamingConventionRecursive(child, parentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
+                    AutoBindByNamingConventionRecursive(child, parentUiAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
                 }
                 return;
             }
@@ -50,10 +50,10 @@ namespace CUiAutoBind
                         string fieldName = ConvertToFieldName(current.name, matchedSuffix.suffix);
 
                         // 检查是否已经绑定
-                        bool exists = parentAutoBind.bindings.Exists(b => b.component == component);
+                        bool exists = parentUiAutoBind.bindings.Exists(b => b.component == component);
                         if (!exists)
                         {
-                            parentAutoBind.AddBinding(component, fieldName);
+                            parentUiAutoBind.AddBinding(component, fieldName);
                             addedCount++;
                         }
                         else
@@ -70,17 +70,17 @@ namespace CUiAutoBind
             }
             
             // 如果当前对象有 AutoBind 组件，则其子对象由自己管理
-            AutoBind currentAutoBind = current.GetComponent<AutoBind>();
-            if (currentAutoBind != null)
+            UiAutoBind currentUiAutoBind = current.GetComponent<UiAutoBind>();
+            if (currentUiAutoBind != null)
             {
-                AutoBindByNamingConventionRecursive(current, currentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
+                AutoBindByNamingConventionRecursive(current, currentUiAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
                 return;
             }
 
             // 递归处理子对象
             foreach (Transform child in current)
             {
-                AutoBindByNamingConventionRecursive(child, parentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
+                AutoBindByNamingConventionRecursive(child, parentUiAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
             }
         }
 
@@ -118,15 +118,16 @@ namespace CUiAutoBind
         {
             // 移除后缀（不区分大小写）
             string fieldName = objectName;
-            if (objectName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(objectName) && !string.IsNullOrEmpty(suffix) &&
+                objectName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
             {
-                fieldName = objectName.Substring(0, objectName.Length - suffix.Length);
+                fieldName = objectName[..^suffix.Length];
             }
 
             // 首字母小写（驼峰命名）
-            if (fieldName.Length > 0)
+            if (!string.IsNullOrEmpty(fieldName))
             {
-                fieldName = char.ToLower(fieldName[0]) + fieldName.Substring(1);
+                fieldName = char.ToLower(fieldName[0]) + fieldName[1..];
             }
 
             return fieldName;

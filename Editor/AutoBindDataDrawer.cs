@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -106,7 +105,7 @@ namespace CUiAutoBind
                 string componentName = component.name;
 
                 // 检查是否是子对象的 AutoBind 组件
-                bool isChildAutoBind = (component is AutoBind) && (component.gameObject != targetObject);
+                bool isChildAutoBind = (component is UiAutoBind) && (component.gameObject != targetObject);
 
                 bool isSelected = (currentComponent == component);
 

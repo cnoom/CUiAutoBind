@@ -11,7 +11,7 @@ namespace CUiAutoBind
     /// <summary>
     /// AutoBind 组件的自定义编辑器
     /// </summary>
-    [CustomEditor(typeof(AutoBind))]
+    [CustomEditor(typeof(UiAutoBind))]
     public class AutoBindEditor : Editor
     {
         private SerializedProperty bindingsProperty;
@@ -22,7 +22,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 缓存的配置，用于 AutoAssignComponents
         /// </summary>
-        private BindConfig config;
+        private UiBindConfig config;
 
         private void OnEnable()
         {
@@ -39,12 +39,12 @@ namespace CUiAutoBind
         {
             serializedObject.Update();
 
-            AutoBind autoBind = (AutoBind)target;
+            UiAutoBind uiAutoBind = (UiAutoBind)target;
 
             // 显示绑定模式选择
             EditorGUILayout.LabelField("绑定模式", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(bindModeProperty, new GUIContent("绑定方式", "选择绑定模式"));
-            EditorGUILayout.HelpBox(autoBind.GetBindModeDescription(), MessageType.Info);
+            EditorGUILayout.HelpBox(uiAutoBind.GetBindModeDescription(), MessageType.Info);
 
             EditorGUILayout.Space();
 
@@ -73,9 +73,9 @@ namespace CUiAutoBind
                     // 移除按钮
                     if (GUILayout.Button("移除绑定", GUILayout.Height(25)))
                     {
-                        Undo.RecordObject(autoBind, "Remove Binding");
-                        autoBind.RemoveBinding(i < autoBind.bindings.Count ? autoBind.bindings[i] : null);
-                        EditorUtility.SetDirty(autoBind);
+                        Undo.RecordObject(uiAutoBind, "Remove Binding");
+                        uiAutoBind.RemoveBinding(i < uiAutoBind.bindings.Count ? uiAutoBind.bindings[i] : null);
+                        EditorUtility.SetDirty(uiAutoBind);
                         serializedObject.Update();
                         i--;
                         EditorGUI.indentLevel++;
@@ -93,16 +93,16 @@ namespace CUiAutoBind
             EditorGUILayout.Space();
 
             // 根据绑定模式显示不同的操作按钮
-            switch (autoBind.bindMode)
+            switch (uiAutoBind.bindMode)
             {
                 case BindMode.Manual:
-                    DrawManualBindingButtons(autoBind);
+                    DrawManualBindingButtons(uiAutoBind);
                     break;
                 case BindMode.AutoSuffix:
-                    DrawAutoSuffixBindingButtons(autoBind);
+                    DrawAutoSuffixBindingButtons(uiAutoBind);
                     break;
                 case BindMode.Hybrid:
-                    DrawHybridBindingButtons(autoBind);
+                    DrawHybridBindingButtons(uiAutoBind);
                     break;
             }
 
@@ -111,7 +111,7 @@ namespace CUiAutoBind
             // 生成代码按钮
             if (GUILayout.Button("生成绑定代码", GUILayout.Height(35)))
             {
-                GenerateCode(autoBind);
+                GenerateCode(uiAutoBind);
             }
 
             EditorGUILayout.Space();
@@ -137,25 +137,25 @@ namespace CUiAutoBind
         /// <summary>
         /// 从当前 GameObject 自动添加组件
         /// </summary>
-        private void AutoAddComponents(AutoBind autoBind)
+        private void AutoAddComponents(UiAutoBind uiAutoBind)
         {
-            Component[] components = autoBind.GetComponents<Component>();
+            Component[] components = uiAutoBind.GetComponents<Component>();
 
             foreach (var component in components)
             {
                 // 跳过 AutoBind 自身和 Transform
-                if (component is AutoBind || component is Transform)
+                if (component is UiAutoBind || component is Transform)
                     continue;
 
                 // 检查是否已经存在
-                bool exists = autoBind.bindings.Exists(b => b.component == component);
+                bool exists = uiAutoBind.bindings.Exists(b => b.component == component);
                 if (!exists)
                 {
                     // 自动生成字段名：驼峰命名
                     string fieldName = component.GetType().Name;
                     fieldName = char.ToLower(fieldName[0]) + fieldName.Substring(1);
 
-                    autoBind.AddBinding(component, fieldName);
+                    uiAutoBind.AddBinding(component, fieldName);
                 }
             }
         }
@@ -163,10 +163,10 @@ namespace CUiAutoBind
         /// <summary>
         /// 按命名约定自动绑定
         /// </summary>
-        private void AutoBindByNamingConvention(AutoBind autoBind)
+        private void AutoBindByNamingConvention(UiAutoBind uiAutoBind)
         {
             // 加载配置
-            BindConfig config = ConfigManager.LoadConfig();
+            UiBindConfig config = ConfigManager.LoadConfig();
             if (config == null || config.suffixConfigs == null || config.suffixConfigs.Length == 0)
             {
                 EditorUtility.DisplayDialog("错误", "请先在配置文件中添加命名规则", "确定");
@@ -179,7 +179,7 @@ namespace CUiAutoBind
             int notFoundCount = 0;
 
             // 递归遍历所有子对象
-            AutoBindByNamingConventionRecursive(autoBind.transform, autoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
+            AutoBindByNamingConventionRecursive(uiAutoBind.transform, uiAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
 
             // 显示结果
             StringBuilder message = new StringBuilder();
@@ -197,15 +197,15 @@ namespace CUiAutoBind
         /// <summary>
         /// 递归按命名约定自动绑定
         /// </summary>
-        private void AutoBindByNamingConventionRecursive(Transform current, AutoBind parentAutoBind, BindConfig config, ref int addedCount, ref int skippedCount, ref int notFoundCount)
+        private void AutoBindByNamingConventionRecursive(Transform current, UiAutoBind parentUiAutoBind, UiBindConfig config, ref int addedCount, ref int skippedCount, ref int notFoundCount)
         {
-            AutoBindUtility.AutoBindByNamingConventionRecursive(current, parentAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
+            AutoBindUtility.AutoBindByNamingConventionRecursive(current, parentUiAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
         }
 
         /// <summary>
         /// 生成代码
         /// </summary>
-        private void GenerateCode(AutoBind autoBind)
+        private void GenerateCode(UiAutoBind uiAutoBind)
         {
             // 加载配置
             config = ConfigManager.LoadOrCreateConfig();
@@ -219,7 +219,7 @@ namespace CUiAutoBind
             CodeGenerator generator = new CodeGenerator(config);
 
             // 获取有效的绑定
-            var validBindings = autoBind.GetValidBindings();
+            var validBindings = uiAutoBind.GetValidBindings();
             if (validBindings.Count == 0)
             {
                 EditorUtility.DisplayDialog("提示", "没有有效的绑定数据", "确定");
@@ -229,20 +229,20 @@ namespace CUiAutoBind
             // 生成代码
             try
             {
-                generator.GenerateCode(autoBind.gameObject, validBindings);
+                generator.GenerateCode(uiAutoBind.gameObject, validBindings);
 
                 // 刷新资源以触发编译
                 AssetDatabase.Refresh();
 
                 // 编译完成后自动绑定（避免编译未完成导致绑定失败）
-                AutoBindBindingScheduler.Enqueue(autoBind);
+                AutoBindBindingScheduler.Enqueue(uiAutoBind);
 
                 StringBuilder message = new StringBuilder();
 
                 message.AppendLine("✓ 代码生成成功！");
                 message.AppendLine();
-                message.AppendLine($"自动文件: {config.GetAutoGeneratedFilePath(autoBind.gameObject.name)}");
-                message.AppendLine($"手动文件: {config.GetManualFilePath(autoBind.gameObject.name)}");
+                message.AppendLine($"自动文件: {config.GetAutoGeneratedFilePath(uiAutoBind.gameObject.name)}");
+                message.AppendLine($"手动文件: {config.GetManualFilePath(uiAutoBind.gameObject.name)}");
                 message.AppendLine();
                 message.AppendLine("编译完成后将自动添加脚本并绑定组件");
                 message.AppendLine("如未绑定，可点击『绑定组件』重试");
@@ -262,7 +262,7 @@ namespace CUiAutoBind
         /// </summary>
         private void RebindComponents()
         {
-            AutoBind autoBind = (AutoBind)target;
+            UiAutoBind uiAutoBind = (UiAutoBind)target;
 
             // 加载配置
             config = ConfigManager.LoadOrCreateConfig();
@@ -274,7 +274,7 @@ namespace CUiAutoBind
 
             // 使用 CodeBinder 重新绑定
             CodeBinder codeBinder = new CodeBinder(config);
-            bool success = codeBinder.BindComponents(autoBind);
+            bool success = codeBinder.BindComponents(uiAutoBind);
 
             if (success)
             {
@@ -291,7 +291,7 @@ namespace CUiAutoBind
         /// </summary>
         private void ValidateBinding()
         {
-            AutoBind autoBind = (AutoBind)target;
+            UiAutoBind uiAutoBind = (UiAutoBind)target;
 
             // 加载配置
             config = ConfigManager.LoadOrCreateConfig();
@@ -303,7 +303,7 @@ namespace CUiAutoBind
 
             // 使用 CodeBinder 验证
             CodeBinder codeBinder = new CodeBinder(config);
-            var validation = codeBinder.ValidateBinding(autoBind);
+            var validation = codeBinder.ValidateBinding(uiAutoBind);
             string report = codeBinder.GenerateReport(validation);
 
             Debug.Log(report);
@@ -313,7 +313,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 绘制手动拖拽绑定模式的按钮
         /// </summary>
-        private void DrawManualBindingButtons(AutoBind autoBind)
+        private void DrawManualBindingButtons(UiAutoBind uiAutoBind)
         {
             EditorGUILayout.LabelField("手动拖拽绑定", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("完全手动添加绑定，适合精确控制的场景。", MessageType.None);
@@ -321,18 +321,18 @@ namespace CUiAutoBind
             // 添加新绑定按钮
             if (GUILayout.Button("添加新绑定", GUILayout.Height(30)))
             {
-                Undo.RecordObject(autoBind, "Add New Binding");
-                autoBind.AddBinding(null, "NewBinding");
-                EditorUtility.SetDirty(autoBind);
+                Undo.RecordObject(uiAutoBind, "Add New Binding");
+                uiAutoBind.AddBinding(null, "NewBinding");
+                EditorUtility.SetDirty(uiAutoBind);
                 serializedObject.Update();
             }
 
             // 从 GameObject 自动添加组件按钮
             if (GUILayout.Button("从当前 GameObject 添加组件", GUILayout.Height(30)))
             {
-                Undo.RecordObject(autoBind, "Auto Add Components");
-                AutoAddComponents(autoBind);
-                EditorUtility.SetDirty(autoBind);
+                Undo.RecordObject(uiAutoBind, "Auto Add Components");
+                AutoAddComponents(uiAutoBind);
+                EditorUtility.SetDirty(uiAutoBind);
                 serializedObject.Update();
             }
         }
@@ -340,7 +340,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 绘制后缀自动绑定模式的按钮
         /// </summary>
-        private void DrawAutoSuffixBindingButtons(AutoBind autoBind)
+        private void DrawAutoSuffixBindingButtons(UiAutoBind uiAutoBind)
         {
             EditorGUILayout.LabelField("后缀自动绑定", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("根据命名后缀自动扫描并绑定，适合大量组件的场景。", MessageType.None);
@@ -348,9 +348,9 @@ namespace CUiAutoBind
             // 按命名约定自动绑定按钮
             if (GUILayout.Button("按命名约定自动绑定", GUILayout.Height(30)))
             {
-                Undo.RecordObject(autoBind, "Auto Bind By Naming Convention");
-                AutoBindByNamingConvention(autoBind);
-                EditorUtility.SetDirty(autoBind);
+                Undo.RecordObject(uiAutoBind, "Auto Bind By Naming Convention");
+                AutoBindByNamingConvention(uiAutoBind);
+                EditorUtility.SetDirty(uiAutoBind);
                 serializedObject.Update();
             }
 
@@ -360,7 +360,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 绘制混合绑定模式的按钮
         /// </summary>
-        private void DrawHybridBindingButtons(AutoBind autoBind)
+        private void DrawHybridBindingButtons(UiAutoBind uiAutoBind)
         {
             EditorGUILayout.LabelField("混合绑定", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("同时支持手动和后缀自动绑定，适合复杂场景。", MessageType.None);
@@ -368,27 +368,27 @@ namespace CUiAutoBind
             // 添加新绑定按钮
             if (GUILayout.Button("添加新绑定", GUILayout.Height(30)))
             {
-                Undo.RecordObject(autoBind, "Add New Binding");
-                autoBind.AddBinding(null, "NewBinding");
-                EditorUtility.SetDirty(autoBind);
+                Undo.RecordObject(uiAutoBind, "Add New Binding");
+                uiAutoBind.AddBinding(null, "NewBinding");
+                EditorUtility.SetDirty(uiAutoBind);
                 serializedObject.Update();
             }
 
             // 从 GameObject 自动添加组件按钮
             if (GUILayout.Button("从当前 GameObject 添加组件", GUILayout.Height(30)))
             {
-                Undo.RecordObject(autoBind, "Auto Add Components");
-                AutoAddComponents(autoBind);
-                EditorUtility.SetDirty(autoBind);
+                Undo.RecordObject(uiAutoBind, "Auto Add Components");
+                AutoAddComponents(uiAutoBind);
+                EditorUtility.SetDirty(uiAutoBind);
                 serializedObject.Update();
             }
 
             // 按命名约定自动绑定按钮
             if (GUILayout.Button("按命名约定自动绑定", GUILayout.Height(30)))
             {
-                Undo.RecordObject(autoBind, "Auto Bind By Naming Convention");
-                AutoBindByNamingConvention(autoBind);
-                EditorUtility.SetDirty(autoBind);
+                Undo.RecordObject(uiAutoBind, "Auto Bind By Naming Convention");
+                AutoBindByNamingConvention(uiAutoBind);
+                EditorUtility.SetDirty(uiAutoBind);
                 serializedObject.Update();
             }
 
@@ -414,12 +414,12 @@ namespace CUiAutoBind
         }
 
 
-        public static void Enqueue(AutoBind autoBind)
+        public static void Enqueue(UiAutoBind uiAutoBind)
         {
-            if (autoBind == null)
+            if (uiAutoBind == null)
                 return;
 
-            string id = GlobalObjectId.GetGlobalObjectIdSlow(autoBind).ToString();
+            string id = GlobalObjectId.GetGlobalObjectIdSlow(uiAutoBind).ToString();
             if (string.IsNullOrEmpty(id))
                 return;
 
@@ -430,10 +430,10 @@ namespace CUiAutoBind
                 SaveIds(ids);
             }
 
-            EditorApplication.delayCall += () => BindWhenReady(autoBind, 0);
+            EditorApplication.delayCall += () => BindWhenReady(uiAutoBind, 0);
         }
 
-        public static void EnqueueAll(AutoBind[] autoBinds)
+        public static void EnqueueAll(UiAutoBind[] autoBinds)
         {
             if (autoBinds == null || autoBinds.Length == 0)
                 return;
@@ -497,34 +497,34 @@ namespace CUiAutoBind
                 if (!GlobalObjectId.TryParse(id, out var globalId))
                     continue;
 
-                AutoBind autoBind = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(globalId) as AutoBind;
-                if (autoBind != null)
+                UiAutoBind uiAutoBind = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(globalId) as UiAutoBind;
+                if (uiAutoBind != null)
                 {
-                    BindWhenReady(autoBind, 0);
+                    BindWhenReady(uiAutoBind, 0);
                 }
             }
         }
 
 
-        private static void BindWhenReady(AutoBind autoBind, int attempt)
+        private static void BindWhenReady(UiAutoBind uiAutoBind, int attempt)
         {
-            if (autoBind == null)
+            if (uiAutoBind == null)
                 return;
 
             if (EditorApplication.isCompiling || EditorApplication.isUpdating)
             {
                 if (attempt < 100)
                 {
-                    EditorApplication.delayCall += () => BindWhenReady(autoBind, attempt + 1);
+                    EditorApplication.delayCall += () => BindWhenReady(uiAutoBind, attempt + 1);
                 }
                 else
                 {
-                    Debug.LogWarning($"AutoBind: 编译超时，未能自动绑定 '{autoBind.gameObject.name}'。请手动点击『绑定组件』重试。");
+                    Debug.LogWarning($"AutoBind: 编译超时，未能自动绑定 '{uiAutoBind.gameObject.name}'。请手动点击『绑定组件』重试。");
                 }
                 return;
             }
 
-            BindConfig config = ConfigManager.LoadOrCreateConfig();
+            UiBindConfig config = ConfigManager.LoadOrCreateConfig();
             if (config == null)
             {
                 Debug.LogWarning("AutoBind: 无法加载配置文件，自动绑定已跳过。");
@@ -532,10 +532,10 @@ namespace CUiAutoBind
             }
 
             CodeBinder codeBinder = new CodeBinder(config);
-            bool success = codeBinder.BindComponents(autoBind);
+            bool success = codeBinder.BindComponents(uiAutoBind);
             if (!success)
             {
-                Debug.LogWarning($"AutoBind: 自动绑定失败 '{autoBind.gameObject.name}'，请检查控制台日志。");
+                Debug.LogWarning($"AutoBind: 自动绑定失败 '{uiAutoBind.gameObject.name}'，请检查控制台日志。");
             }
         }
     }

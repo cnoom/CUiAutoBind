@@ -29,7 +29,7 @@ namespace CUiAutoBind
     /// AutoBind 组件，用于标记和管理 UI 组件绑定
     /// </summary>
     [ExecuteAlways]
-    public class AutoBind : MonoBehaviour
+    public class UiAutoBind : MonoBehaviour
     {
         /// <summary>
         /// 绑定模式
@@ -103,7 +103,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 获取所有子对象的 AutoBind 组件
         /// </summary>
-        public List<AutoBind> GetChildAutoBinds()
+        public List<UiAutoBind> GetChildAutoBinds()
         {
             return GetChildAutoBindsRecursive();
         }
@@ -111,21 +111,21 @@ namespace CUiAutoBind
         /// <summary>
         /// 递归获取子对象的 AutoBind 组件
         /// </summary>
-        private List<AutoBind> GetChildAutoBindsRecursive()
+        private List<UiAutoBind> GetChildAutoBindsRecursive()
         {
-            List<AutoBind> result = new List<AutoBind>();
+            List<UiAutoBind> result = new List<UiAutoBind>();
 
             // 遍历所有子对象
             foreach (Transform child in transform)
             {
                 // 获取子对象的 AutoBind 组件
-                AutoBind childAutoBind = child.GetComponent<AutoBind>();
-                if (childAutoBind != null)
+                UiAutoBind childUiAutoBind = child.GetComponent<UiAutoBind>();
+                if (childUiAutoBind != null)
                 {
-                    result.Add(childAutoBind);
+                    result.Add(childUiAutoBind);
 
                     // 递归获取更深的子对象
-                    result.AddRange(childAutoBind.GetChildAutoBindsRecursive());
+                    result.AddRange(childUiAutoBind.GetChildAutoBindsRecursive());
                 }
             }
 

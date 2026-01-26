@@ -9,19 +9,19 @@ namespace CUiAutoBind
     /// </summary>
     public static class ConfigManager
     {
-        private const string CONFIG_ASSET_PATH = "Assets/CUIBind/Resources/AutoBindConfig.asset";
-        private const string CONFIG_FOLDER_PATH = "Assets/CUIBind/Resources";
+        private const string CONFIG_ASSET_PATH = "Assets/CUIBind/UiAutoBindConfig.asset";
+        private const string CONFIG_FOLDER_PATH = "Assets/CUIBind/";
 
         /// <summary>
         /// 加载配置（不创建）
         /// </summary>
-        public static BindConfig LoadConfig()
+        public static UiBindConfig LoadConfig()
         {
-            string[] guids = AssetDatabase.FindAssets("t:BindConfig");
+            string[] guids = AssetDatabase.FindAssets("t:UiBindConfig");
             if (guids.Length > 0)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                return AssetDatabase.LoadAssetAtPath<BindConfig>(path);
+                return AssetDatabase.LoadAssetAtPath<UiBindConfig>(path);
             }
 
             return null;
@@ -30,9 +30,9 @@ namespace CUiAutoBind
         /// <summary>
         /// 加载或创建配置
         /// </summary>
-        public static BindConfig LoadOrCreateConfig()
+        public static UiBindConfig LoadOrCreateConfig()
         {
-            BindConfig config = LoadConfig();
+            UiBindConfig config = LoadConfig();
             if (config != null)
                 return config;
 
@@ -43,7 +43,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 创建默认配置
         /// </summary>
-        public static BindConfig CreateDefaultConfig()
+        public static UiBindConfig CreateDefaultConfig()
         {
             // 确保目录存在
             if (!Directory.Exists(CONFIG_FOLDER_PATH))
@@ -53,7 +53,7 @@ namespace CUiAutoBind
             }
 
             // 创建配置文件
-            BindConfig newConfig = ScriptableObject.CreateInstance<BindConfig>();
+            UiBindConfig newConfig = ScriptableObject.CreateInstance<UiBindConfig>();
             AssetDatabase.CreateAsset(newConfig, CONFIG_ASSET_PATH);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -64,7 +64,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 重新生成配置
         /// </summary>
-        public static BindConfig RegenerateConfig()
+        public static UiBindConfig RegenerateConfig()
         {
             // 删除旧配置
             if (File.Exists(CONFIG_ASSET_PATH))

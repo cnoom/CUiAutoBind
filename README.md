@@ -2,6 +2,18 @@
 
 Unity UI 自动绑定系统 - 一款高效的 UI 开发工具，通过自动生成代码来简化 UI 组件的绑定与管理。
 
+## 依赖说明
+
+**必需依赖：**
+- [UnityCodeGen](https://github.com/cnoom/unitycodegen) v1.0.0 - 轻量级代码生成工具，提供模板码生成功能
+
+**UnityCodeGen 简介：**
+UnityCodeGen 是一个简洁的 C# 模板引擎，支持变量替换、条件判断、循环迭代等功能。本包使用 UnityCodeGen 来渲染 UI 绑定代码模板。
+
+**安装方式：**
+1. 将 `com.cnoom.unitycodegen` 包放入 Unity 项目的 `Packages` 目录
+2. 或通过 Package Manager 添加本地包引用
+
 ## 功能特性
 
 - ✅ **三种绑定模式** - 支持手动拖拽、后缀自动、混合绑定三种模式
@@ -52,7 +64,7 @@ Unity UI 自动绑定系统 - 一款高效的 UI 开发工具，通过自动生�
 - 打开菜单 `Tools/CUIBind/打开窗口`
 - 在窗口中点击"创建默认配置"按钮
 
-默认配置文件位置：`Assets/CUIBind/Resources/AutoBindConfig.asset`
+默认配置文件位置：`Assets/CUIBind/UiAutoBindConfig.asset`
 
 ### 2. 标记 UI 组件
 

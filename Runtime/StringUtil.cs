@@ -25,8 +25,11 @@ namespace CUiAutoBind
             // 移除空格
             className = className.Replace(" ", "");
 
-            // 首字母大写
-            className = char.ToUpper(className[0]) + className.Substring(1);
+            // 首字母大写（确保字符串不为空）
+            if (!string.IsNullOrEmpty(className))
+            {
+                className = char.ToUpper(className[0]) + className[1..];
+            }
 
             return className;
         }
@@ -36,10 +39,10 @@ namespace CUiAutoBind
         /// </summary>
         public static string ToCamelCase(string str)
         {
-            if (string.IsNullOrEmpty(str) || str.Length == 0)
+            if (string.IsNullOrEmpty(str))
                 return str;
 
-            return char.ToLower(str[0]) + str.Substring(1);
+            return char.ToLower(str[0]) + str[1..];
         }
 
         /// <summary>

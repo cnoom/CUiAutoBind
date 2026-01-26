@@ -53,7 +53,7 @@ namespace CUiAutoBind
         /// </summary>
         public bool IsAutoBindReference()
         {
-            return component != null && component is AutoBind;
+            return component != null && component is UiAutoBind;
         }
     }
 }

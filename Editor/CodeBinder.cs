@@ -12,9 +12,9 @@ namespace CUiAutoBind
     /// </summary>
     public class CodeBinder
     {
-        private BindConfig config;
+        private UiBindConfig config;
 
-        public CodeBinder(BindConfig config)
+        public CodeBinder(UiBindConfig config)
         {
             this.config = config;
         }
@@ -22,19 +22,19 @@ namespace CUiAutoBind
         /// <summary>
         /// 绑定单个 AutoBind 的组件到生成的脚本
         /// </summary>
-        public bool BindComponents(AutoBind autoBind)
+        public bool BindComponents(UiAutoBind uiAutoBind)
         {
-            if (autoBind == null)
+            if (uiAutoBind == null)
             {
                 Debug.LogError("CodeBinder: AutoBind is null");
                 return false;
             }
 
-            string className = autoBind.GetUIClassName();
-            GameObject targetGameObject = autoBind.gameObject;
+            string className = uiAutoBind.GetUIClassName();
+            GameObject targetGameObject = uiAutoBind.gameObject;
 
             // 先递归绑定子对象（确保子对象的脚本组件已添加，这样父对象才能引用子对象类型）
-            BindChildComponents(autoBind);
+            BindChildComponents(uiAutoBind);
 
             // 尝试获取或添加生成的脚本组件
             Component generatedComponent = GetOrAddGeneratedScriptComponent(targetGameObject, className);
@@ -48,7 +48,7 @@ namespace CUiAutoBind
             SerializedObject serializedObject = new SerializedObject(generatedComponent);
 
             // 绑定当前 AutoBind 的字段
-            BindFields(autoBind, serializedObject);
+            BindFields(uiAutoBind, serializedObject);
 
             // 应用修改
             serializedObject.ApplyModifiedProperties();
@@ -189,9 +189,9 @@ namespace CUiAutoBind
         /// <summary>
         /// 绑定字段
         /// </summary>
-        private void BindFields(AutoBind autoBind, SerializedObject serializedObject)
+        private void BindFields(UiAutoBind uiAutoBind, SerializedObject serializedObject)
         {
-            List<AutoBindData> bindings = autoBind.GetValidBindings();
+            List<AutoBindData> bindings = uiAutoBind.GetValidBindings();
 
             foreach (var binding in bindings)
             {
@@ -239,14 +239,14 @@ namespace CUiAutoBind
         /// </summary>
         private bool AssignAutoBindReference(SerializedProperty property, AutoBindData binding)
         {
-            AutoBind childAutoBind = binding.component as AutoBind;
-            if (childAutoBind == null)
+            UiAutoBind childUiAutoBind = binding.component as UiAutoBind;
+            if (childUiAutoBind == null)
                 return false;
 
-            string childClassName = childAutoBind.GetUIClassName();
+            string childClassName = childUiAutoBind.GetUIClassName();
 
             // 获取子对象的脚本组件
-            Component childScript = GetGeneratedComponent(childAutoBind.gameObject, childClassName);
+            Component childScript = GetGeneratedComponent(childUiAutoBind.gameObject, childClassName);
             if (childScript == null)
             {
                 Debug.LogWarning($"CodeBinder: 无法找到子对象的脚本组件 '{childClassName}'");
@@ -270,19 +270,19 @@ namespace CUiAutoBind
         /// <summary>
         /// 递归绑定子对象（只绑定在父对象 bindings 中显式绑定的 AutoBind 对象）
         /// </summary>
-        private void BindChildComponents(AutoBind parentAutoBind)
+        private void BindChildComponents(UiAutoBind parentUiAutoBind)
         {
-            var bindings = parentAutoBind.GetValidBindings();
+            var bindings = parentUiAutoBind.GetValidBindings();
 
             foreach (var binding in bindings)
             {
                 // 只绑定在 bindings 中显式绑定的 AutoBind 对象
                 if (binding.IsAutoBindReference() && binding.component != null)
                 {
-                    AutoBind childAutoBind = binding.component as AutoBind;
-                    if (childAutoBind != null)
+                    UiAutoBind childUiAutoBind = binding.component as UiAutoBind;
+                    if (childUiAutoBind != null)
                     {
-                        BindComponents(childAutoBind);
+                        BindComponents(childUiAutoBind);
                     }
                 }
             }
@@ -291,7 +291,7 @@ namespace CUiAutoBind
         /// <summary>
         /// 批量绑定多个 AutoBind
         /// </summary>
-        public BindingResult BindMultiple(AutoBind[] autoBinds)
+        public BindingResult BindMultiple(UiAutoBind[] autoBinds)
         {
             BindingResult result = new BindingResult();
 
@@ -359,13 +359,13 @@ namespace CUiAutoBind
         /// <summary>
         /// 验证绑定状态
         /// </summary>
-        public BindingValidation ValidateBinding(AutoBind autoBind)
+        public BindingValidation ValidateBinding(UiAutoBind uiAutoBind)
         {
             BindingValidation validation = new BindingValidation();
-            validation.autoBindName = autoBind.gameObject.name;
+            validation.autoBindName = uiAutoBind.gameObject.name;
 
-            string className = autoBind.GetUIClassName();
-            GameObject targetGameObject = autoBind.gameObject;
+            string className = uiAutoBind.GetUIClassName();
+            GameObject targetGameObject = uiAutoBind.gameObject;
 
             // 检查生成的脚本是否存在
             Component generatedComponent = GetGeneratedComponent(targetGameObject, className);
@@ -394,7 +394,7 @@ namespace CUiAutoBind
             }
 
             // 验证每个绑定
-            List<AutoBindData> bindings = autoBind.GetValidBindings();
+            List<AutoBindData> bindings = uiAutoBind.GetValidBindings();
 
             foreach (var binding in bindings)
             {

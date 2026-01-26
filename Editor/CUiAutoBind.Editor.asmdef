@@ -1,18 +1,20 @@
 {
-  "name": "CUIBind.Editor",
-  "references": [
-    "CUIBind.Runtime",
-    "UnityEngine.UI"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "autoReferenced": true,
-  "defineConstraints": [],
-  "versionDefines": [],
-  "noEngineReferences": false
+    "name": "CUIBind.Editor",
+    "rootNamespace": "",
+    "references": [
+        "CUIBind.Runtime",
+        "UnityEngine.UI",
+        "UnityCodeGen"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
