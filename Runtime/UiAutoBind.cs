@@ -1,62 +1,61 @@
-using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
 namespace CUiAutoBind
 {
     /// <summary>
-    /// 绑定模式枚举
+    ///     绑定模式枚举
     /// </summary>
     public enum BindMode
     {
         /// <summary>
-        /// 手动拖拽绑定 - 完全手动添加绑定
+        ///     手动拖拽绑定 - 完全手动添加绑定
         /// </summary>
         Manual,
 
         /// <summary>
-        /// 后缀自动绑定 - 根据命名后缀自动扫描并绑定
+        ///     后缀自动绑定 - 根据命名后缀自动扫描并绑定
         /// </summary>
         AutoSuffix,
 
         /// <summary>
-        /// 混合绑定 - 同时支持手动和后缀自动绑定
+        ///     混合绑定 - 同时支持手动和后缀自动绑定
         /// </summary>
         Hybrid
     }
 
     /// <summary>
-    /// AutoBind 组件，用于标记和管理 UI 组件绑定
+    ///     AutoBind 组件，用于标记和管理 UI 组件绑定
     /// </summary>
     [ExecuteAlways]
     public class UiAutoBind : MonoBehaviour
     {
         /// <summary>
-        /// 绑定模式
+        ///     绑定模式
         /// </summary>
         public BindMode bindMode = BindMode.Manual;
 
         /// <summary>
-        /// 绑定数据数组
+        ///     绑定数据数组
         /// </summary>
         public List<AutoBindData> bindings = new List<AutoBindData>();
 
         /// <summary>
-        /// 自定义 UI 类名（留空则使用 GameObject 名称）
+        ///     自定义 UI 类名（留空则使用 GameObject 名称）
         /// </summary>
         public string customClassName = "";
 
         /// <summary>
-        /// 是否显示UI绑定列表
+        ///     是否显示UI绑定列表
         /// </summary>
         public bool showBindingList = true;
 
         /// <summary>
-        /// 添加绑定数据
+        ///     添加绑定数据
         /// </summary>
         public void AddBinding(Component component, string fieldName)
         {
-            var data = new AutoBindData
+            AutoBindData data = new AutoBindData
             {
                 component = component,
                 fieldName = fieldName,
@@ -64,9 +63,9 @@ namespace CUiAutoBind
             };
 
             // 只有当组件不为 null 时才检查重复
-            if (component != null)
+            if(component != null)
             {
-                if (bindings.Exists(b => b.component == component))
+                if(bindings.Exists(b => b.component == component))
                     return;
             }
 
@@ -74,18 +73,18 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 移除绑定数据
+        ///     移除绑定数据
         /// </summary>
         public void RemoveBinding(AutoBindData data)
         {
-            if (data != null && bindings.Contains(data))
+            if(data != null && bindings.Contains(data))
             {
                 bindings.Remove(data);
             }
         }
 
         /// <summary>
-        /// 清空所有绑定
+        ///     清空所有绑定
         /// </summary>
         public void ClearBindings()
         {
@@ -93,7 +92,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 获取所有有效的绑定数据
+        ///     获取所有有效的绑定数据
         /// </summary>
         public List<AutoBindData> GetValidBindings()
         {
@@ -101,7 +100,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 获取所有子对象的 AutoBind 组件
+        ///     获取所有子对象的 AutoBind 组件
         /// </summary>
         public List<UiAutoBind> GetChildAutoBinds()
         {
@@ -109,7 +108,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 递归获取子对象的 AutoBind 组件
+        ///     递归获取子对象的 AutoBind 组件
         /// </summary>
         private List<UiAutoBind> GetChildAutoBindsRecursive()
         {
@@ -120,7 +119,7 @@ namespace CUiAutoBind
             {
                 // 获取子对象的 AutoBind 组件
                 UiAutoBind childUiAutoBind = child.GetComponent<UiAutoBind>();
-                if (childUiAutoBind != null)
+                if(childUiAutoBind != null)
                 {
                     result.Add(childUiAutoBind);
 
@@ -133,7 +132,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 获取 UI 类名（优先使用自定义名称）
+        ///     获取 UI 类名（优先使用自定义名称）
         /// </summary>
         public string GetUIClassName()
         {
@@ -141,11 +140,11 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 获取绑定模式描述
+        ///     获取绑定模式描述
         /// </summary>
         public string GetBindModeDescription()
         {
-            switch (bindMode)
+            switch(bindMode)
             {
                 case BindMode.Manual:
                     return "手动拖拽绑定 - 完全手动添加绑定";

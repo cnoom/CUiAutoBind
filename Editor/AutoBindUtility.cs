@@ -1,20 +1,21 @@
-using UnityEngine;
 using System;
+using System.Reflection;
+using UnityEngine;
 
 namespace CUiAutoBind
 {
     /// <summary>
-    /// AutoBind 编辑器工具类，提供共享的辅助方法
+    ///     AutoBind 编辑器工具类，提供共享的辅助方法
     /// </summary>
     public static class AutoBindUtility
     {
         /// <summary>
-        /// 递归按命名约定自动绑定
+        ///     递归按命名约定自动绑定
         /// </summary>
         public static void AutoBindByNamingConventionRecursive(Transform current, UiAutoBind parentUiAutoBind, UiBindConfig config, ref int addedCount, ref int skippedCount, ref int notFoundCount)
         {
             // 跳过父对象自身
-            if (current == parentUiAutoBind.transform)
+            if(current == parentUiAutoBind.transform)
             {
                 // 只遍历直接子对象
                 foreach (Transform child in current)
@@ -26,9 +27,9 @@ namespace CUiAutoBind
 
             // 检查是否匹配命名约定
             SuffixConfig matchedSuffix = null;
-            foreach (var suffixConfig in config.suffixConfigs)
+            foreach (SuffixConfig suffixConfig in config.suffixConfigs)
             {
-                if (current.name.EndsWith(suffixConfig.suffix, StringComparison.OrdinalIgnoreCase))
+                if(current.name.EndsWith(suffixConfig.suffix, StringComparison.OrdinalIgnoreCase))
                 {
                     matchedSuffix = suffixConfig;
                     break;
@@ -36,22 +37,22 @@ namespace CUiAutoBind
             }
 
             // 如果匹配到命名规则，尝试绑定
-            if (matchedSuffix != null)
+            if(matchedSuffix != null)
             {
                 // 尝试获取组件类型
                 Type componentType = GetComponentType(matchedSuffix);
-                if (componentType != null)
+                if(componentType != null)
                 {
                     Component component = current.GetComponent(componentType);
 
-                    if (component)
+                    if(component)
                     {
                         // 生成字段名（将后缀转换为驼峰命名）
                         string fieldName = ConvertToFieldName(current.name, matchedSuffix.suffix);
 
                         // 检查是否已经绑定
                         bool exists = parentUiAutoBind.bindings.Exists(b => b.component == component);
-                        if (!exists)
+                        if(!exists)
                         {
                             parentUiAutoBind.AddBinding(component, fieldName);
                             addedCount++;
@@ -68,10 +69,10 @@ namespace CUiAutoBind
                     }
                 }
             }
-            
+
             // 如果当前对象有 AutoBind 组件，则其子对象由自己管理
             UiAutoBind currentUiAutoBind = current.GetComponent<UiAutoBind>();
-            if (currentUiAutoBind != null)
+            if(currentUiAutoBind != null)
             {
                 AutoBindByNamingConventionRecursive(current, currentUiAutoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
                 return;
@@ -85,26 +86,25 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 根据后缀配置获取组件类型
+        ///     根据后缀配置获取组件类型
         /// </summary>
         public static Type GetComponentType(SuffixConfig suffixConfig)
         {
-            if (suffixConfig.componentType == null || string.IsNullOrEmpty(suffixConfig.componentType.FullTypeName))
+            if(suffixConfig.componentType == null || string.IsNullOrEmpty(suffixConfig.componentType.FullTypeName))
                 return null;
 
             // 尝试从已加载的程序集中查找类型
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 try
                 {
                     // 使用完整的类型名
                     Type type = assembly.GetType(suffixConfig.componentType.FullTypeName, false, true);
-                    if (type != null)
+                    if(type != null)
                         return type;
                 }
                 catch
                 {
-                    continue;
                 }
             }
 
@@ -112,20 +112,20 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 将对象名称转换为字段名（移除后缀，首字母小写）
+        ///     将对象名称转换为字段名（移除后缀，首字母小写）
         /// </summary>
         public static string ConvertToFieldName(string objectName, string suffix)
         {
             // 移除后缀（不区分大小写）
             string fieldName = objectName;
-            if (!string.IsNullOrEmpty(objectName) && !string.IsNullOrEmpty(suffix) &&
-                objectName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            if(!string.IsNullOrEmpty(objectName) && !string.IsNullOrEmpty(suffix) &&
+               objectName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
             {
                 fieldName = objectName[..^suffix.Length];
             }
 
             // 首字母小写（驼峰命名）
-            if (!string.IsNullOrEmpty(fieldName))
+            if(!string.IsNullOrEmpty(fieldName))
             {
                 fieldName = char.ToLower(fieldName[0]) + fieldName[1..];
             }

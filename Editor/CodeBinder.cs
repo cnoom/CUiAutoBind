@@ -1,18 +1,18 @@
-using UnityEngine;
-using UnityEditor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using System.Text;
+using UnityEditor;
+using UnityEngine;
 
 namespace CUiAutoBind
 {
     /// <summary>
-    /// 代码绑定类，负责将组件自动绑定到生成的脚本字段上
+    ///     代码绑定类，负责将组件自动绑定到生成的脚本字段上
     /// </summary>
     public class CodeBinder
     {
-        private UiBindConfig config;
+        private readonly UiBindConfig config;
 
         public CodeBinder(UiBindConfig config)
         {
@@ -20,11 +20,11 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 绑定单个 AutoBind 的组件到生成的脚本
+        ///     绑定单个 AutoBind 的组件到生成的脚本
         /// </summary>
         public bool BindComponents(UiAutoBind uiAutoBind)
         {
-            if (uiAutoBind == null)
+            if(uiAutoBind == null)
             {
                 Debug.LogError("CodeBinder: AutoBind is null");
                 return false;
@@ -38,7 +38,7 @@ namespace CUiAutoBind
 
             // 尝试获取或添加生成的脚本组件
             Component generatedComponent = GetOrAddGeneratedScriptComponent(targetGameObject, className);
-            if (generatedComponent == null)
+            if(generatedComponent == null)
             {
                 Debug.LogWarning($"CodeBinder: 无法找到或添加生成的脚本组件 '{className}' 到对象 '{targetGameObject.name}' 上");
                 return false;
@@ -60,13 +60,13 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 获取或添加生成的脚本组件到 GameObject
+        ///     获取或添加生成的脚本组件到 GameObject
         /// </summary>
         private Component GetOrAddGeneratedScriptComponent(GameObject target, string className)
         {
             // 首先尝试获取已存在的组件
             Component existingComponent = GetGeneratedComponent(target, className);
-            if (existingComponent != null)
+            if(existingComponent != null)
             {
                 return existingComponent;
             }
@@ -76,7 +76,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 将生成的脚本添加到 GameObject 上
+        ///     将生成的脚本添加到 GameObject 上
         /// </summary>
         private Component AddGeneratedScriptToGameObject(GameObject target, string className)
         {
@@ -85,7 +85,7 @@ namespace CUiAutoBind
 
             // 获取脚本类型
             Type scriptType = GetScriptType(className);
-            if (scriptType == null)
+            if(scriptType == null)
             {
                 Debug.LogError($"CodeBinder: 无法找到脚本类型 '{className}'，请确保脚本已编译");
                 return null;
@@ -93,54 +93,50 @@ namespace CUiAutoBind
 
             // 检查该组件是否已存在（避免重复添加）
             Component existingComponent = target.GetComponent(scriptType);
-            if (existingComponent != null)
+            if(existingComponent != null)
             {
                 return existingComponent;
             }
 
             // 添加脚本组件
             Component newComponent = target.AddComponent(scriptType);
-            if (newComponent != null)
+            if(newComponent != null)
             {
                 Debug.Log($"CodeBinder: 成功添加脚本组件 '{className}' 到 '{target.name}'");
                 EditorUtility.SetDirty(target);
                 return newComponent;
             }
-            else
-            {
-                Debug.LogError($"CodeBinder: 添加脚本组件 '{className}' 到 '{target.name}' 失败");
-                return null;
-            }
+            Debug.LogError($"CodeBinder: 添加脚本组件 '{className}' 到 '{target.name}' 失败");
+            return null;
         }
 
         /// <summary>
-        /// 获取脚本类型
+        ///     获取脚本类型
         /// </summary>
         private Type GetScriptType(string className)
         {
             // 尝试从所有已加载的程序集中查找类型
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 try
                 {
                     // 尝试完整类型名（包含命名空间）
-                    if (!string.IsNullOrEmpty(config.namespaceName))
+                    if(!string.IsNullOrEmpty(config.namespaceName))
                     {
-                        string fullClassName = $"{config.namespaceName}.{className}";
+                        var fullClassName = $"{config.namespaceName}.{className}";
                         Type type = assembly.GetType(fullClassName, false, true);
-                        if (type != null)
+                        if(type != null)
                             return type;
                     }
 
                     // 尝试仅类名
                     Type typeByName = assembly.GetType(className, false, true);
-                    if (typeByName != null)
+                    if(typeByName != null)
                         return typeByName;
                 }
                 catch
                 {
                     // 某些程序集可能无法加载类型，忽略
-                    continue;
                 }
             }
 
@@ -148,7 +144,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 获取生成的脚本组件
+        ///     获取生成的脚本组件
         /// </summary>
         private Component GetGeneratedComponent(GameObject target, string className)
         {
@@ -156,28 +152,28 @@ namespace CUiAutoBind
             Component[] components = target.GetComponents<Component>();
 
             // 查找类型名称匹配的组件
-            foreach (var component in components)
+            foreach (Component component in components)
             {
-                if (component == null)
+                if(component == null)
                     continue;
 
                 Type componentType = component.GetType();
 
                 // 跳过 Unity 内置组件
-                if (IsUnityBuiltInComponent(componentType))
+                if(IsUnityBuiltInComponent(componentType))
                     continue;
 
                 // 检查类型名称是否匹配
-                if (componentType.Name == className)
+                if(componentType.Name == className)
                     return component;
             }
 
             // 如果使用命名空间，尝试完整名称匹配
-            if (!string.IsNullOrEmpty(config.namespaceName))
+            if(!string.IsNullOrEmpty(config.namespaceName))
             {
-                string fullClassName = $"{config.namespaceName}.{className}";
-                Type type = System.Type.GetType(fullClassName);
-                if (type != null)
+                var fullClassName = $"{config.namespaceName}.{className}";
+                Type type = Type.GetType(fullClassName);
+                if(type != null)
                 {
                     return target.GetComponent(type);
                 }
@@ -187,29 +183,29 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 绑定字段
+        ///     绑定字段
         /// </summary>
         private void BindFields(UiAutoBind uiAutoBind, SerializedObject serializedObject)
         {
             List<AutoBindData> bindings = uiAutoBind.GetValidBindings();
 
-            foreach (var binding in bindings)
+            foreach (AutoBindData binding in bindings)
             {
-                if (binding == null || !binding.generateField)
+                if(binding == null || !binding.generateField)
                     continue;
 
                 string fieldName = binding.fieldName;
 
                 // 查找对应的 SerializedProperty
                 SerializedProperty property = serializedObject.FindProperty(fieldName);
-                if (property == null)
+                if(property == null)
                 {
                     Debug.LogWarning($"CodeBinder: 字段 '{fieldName}' 在脚本中未找到");
                     continue;
                 }
 
                 // 根据绑定类型赋值
-                if (!AssignFieldValue(property, binding))
+                if(!AssignFieldValue(property, binding))
                 {
                     Debug.LogWarning($"CodeBinder: 无法赋值字段 '{fieldName}'");
                 }
@@ -217,15 +213,15 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 赋值字段
+        ///     赋值字段
         /// </summary>
         private bool AssignFieldValue(SerializedProperty property, AutoBindData binding)
         {
-            if (binding == null || binding.component == null)
+            if(binding == null || binding.component == null)
                 return false;
 
             // AutoBind 引用类型
-            if (binding.IsAutoBindReference())
+            if(binding.IsAutoBindReference())
             {
                 return AssignAutoBindReference(property, binding);
             }
@@ -235,19 +231,19 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 赋值 AutoBind 引用字段
+        ///     赋值 AutoBind 引用字段
         /// </summary>
         private bool AssignAutoBindReference(SerializedProperty property, AutoBindData binding)
         {
             UiAutoBind childUiAutoBind = binding.component as UiAutoBind;
-            if (childUiAutoBind == null)
+            if(childUiAutoBind == null)
                 return false;
 
             string childClassName = childUiAutoBind.GetUIClassName();
 
             // 获取子对象的脚本组件
             Component childScript = GetGeneratedComponent(childUiAutoBind.gameObject, childClassName);
-            if (childScript == null)
+            if(childScript == null)
             {
                 Debug.LogWarning($"CodeBinder: 无法找到子对象的脚本组件 '{childClassName}'");
                 return false;
@@ -258,7 +254,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 赋值普通组件引用字段
+        ///     赋值普通组件引用字段
         /// </summary>
         private bool AssignComponentReference(SerializedProperty property, AutoBindData binding)
         {
@@ -268,19 +264,19 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 递归绑定子对象（只绑定在父对象 bindings 中显式绑定的 AutoBind 对象）
+        ///     递归绑定子对象（只绑定在父对象 bindings 中显式绑定的 AutoBind 对象）
         /// </summary>
         private void BindChildComponents(UiAutoBind parentUiAutoBind)
         {
-            var bindings = parentUiAutoBind.GetValidBindings();
+            List<AutoBindData> bindings = parentUiAutoBind.GetValidBindings();
 
-            foreach (var binding in bindings)
+            foreach (AutoBindData binding in bindings)
             {
                 // 只绑定在 bindings 中显式绑定的 AutoBind 对象
-                if (binding.IsAutoBindReference() && binding.component != null)
+                if(binding.IsAutoBindReference() && binding.component != null)
                 {
                     UiAutoBind childUiAutoBind = binding.component as UiAutoBind;
-                    if (childUiAutoBind != null)
+                    if(childUiAutoBind != null)
                     {
                         BindComponents(childUiAutoBind);
                     }
@@ -289,22 +285,22 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 批量绑定多个 AutoBind
+        ///     批量绑定多个 AutoBind
         /// </summary>
         public BindingResult BindMultiple(UiAutoBind[] autoBinds)
         {
             BindingResult result = new BindingResult();
 
-            if (autoBinds == null || autoBinds.Length == 0)
+            if(autoBinds == null || autoBinds.Length == 0)
             {
                 return result;
             }
 
-            foreach (var autoBind in autoBinds)
+            foreach (UiAutoBind autoBind in autoBinds)
             {
                 try
                 {
-                    if (BindComponents(autoBind))
+                    if(BindComponents(autoBind))
                     {
                         result.successCount++;
                         result.successList.Add(autoBind.gameObject.name);
@@ -315,7 +311,7 @@ namespace CUiAutoBind
                         result.failureList.Add(autoBind.gameObject.name);
                     }
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     result.failureCount++;
                     result.failureList.Add(autoBind.gameObject.name);
@@ -328,18 +324,18 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 检查是否是 Unity 内置组件
+        ///     检查是否是 Unity 内置组件
         /// </summary>
         private bool IsUnityBuiltInComponent(Type type)
         {
-            if (type == null)
+            if(type == null)
                 return false;
 
             string typeName = type.FullName ?? "";
             string @namespace = type.Namespace ?? "";
 
             // Unity 内置的命名空间
-            string[] unityNamespaces = new string[]
+            var unityNamespaces = new[]
             {
                 "UnityEngine",
                 "UnityEngine.UI",
@@ -347,9 +343,9 @@ namespace CUiAutoBind
             };
 
             // 检查是否在内置命名空间中
-            foreach (var ns in unityNamespaces)
+            foreach (string ns in unityNamespaces)
             {
-                if (@namespace.StartsWith(ns))
+                if(@namespace.StartsWith(ns))
                     return true;
             }
 
@@ -357,7 +353,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 验证绑定状态
+        ///     验证绑定状态
         /// </summary>
         public BindingValidation ValidateBinding(UiAutoBind uiAutoBind)
         {
@@ -369,7 +365,7 @@ namespace CUiAutoBind
 
             // 检查生成的脚本是否存在
             Component generatedComponent = GetGeneratedComponent(targetGameObject, className);
-            if (generatedComponent == null)
+            if(generatedComponent == null)
             {
                 validation.isValid = false;
                 validation.errors.Add($"生成的脚本 '{className}' 不存在");
@@ -387,7 +383,7 @@ namespace CUiAutoBind
             // 收集脚本中的字段
             while (property.Next(true))
             {
-                if (property.propertyType == SerializedPropertyType.ObjectReference)
+                if(property.propertyType == SerializedPropertyType.ObjectReference)
                 {
                     scriptFields.Add(property.name);
                 }
@@ -396,9 +392,9 @@ namespace CUiAutoBind
             // 验证每个绑定
             List<AutoBindData> bindings = uiAutoBind.GetValidBindings();
 
-            foreach (var binding in bindings)
+            foreach (AutoBindData binding in bindings)
             {
-                if (binding == null || !binding.generateField)
+                if(binding == null || !binding.generateField)
                     continue;
 
                 BindingFieldStatus fieldStatus = new BindingFieldStatus();
@@ -406,7 +402,7 @@ namespace CUiAutoBind
                 fieldStatus.targetComponent = binding.component != null ? binding.component.GetType().Name : "Null";
 
                 // 检查字段是否存在
-                if (!scriptFields.Contains(binding.fieldName))
+                if(!scriptFields.Contains(binding.fieldName))
                 {
                     fieldStatus.isBound = false;
                     fieldStatus.message = "字段不存在";
@@ -416,7 +412,7 @@ namespace CUiAutoBind
 
                 // 检查字段是否已赋值
                 SerializedProperty fieldProperty = serializedObject.FindProperty(binding.fieldName);
-                if (fieldProperty != null && fieldProperty.objectReferenceValue == null)
+                if(fieldProperty != null && fieldProperty.objectReferenceValue == null)
                 {
                     fieldStatus.isBound = false;
                     fieldStatus.message = "字段未赋值";
@@ -435,39 +431,39 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 生成绑定报告
+        ///     生成绑定报告
         /// </summary>
         public string GenerateReport(BindingValidation validation)
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"=== 绑定验证报告 ===");
+            sb.AppendLine("=== 绑定验证报告 ===");
             sb.AppendLine($"对象: {validation.autoBindName}");
             sb.AppendLine($"脚本类型: {validation.scriptType}");
             sb.AppendLine($"状态: {(validation.isValid ? "✓ 有效" : "✗ 无效")}");
             sb.AppendLine();
 
             sb.AppendLine($"有效绑定 ({validation.validFields.Count}):");
-            foreach (var field in validation.validFields)
+            foreach (BindingFieldStatus field in validation.validFields)
             {
                 sb.AppendLine($"  ✓ {field.fieldName} ({field.targetComponent}) - {field.message}");
             }
 
-            if (validation.invalidFields.Count > 0)
+            if(validation.invalidFields.Count > 0)
             {
                 sb.AppendLine();
                 sb.AppendLine($"无效绑定 ({validation.invalidFields.Count}):");
-                foreach (var field in validation.invalidFields)
+                foreach (BindingFieldStatus field in validation.invalidFields)
                 {
                     sb.AppendLine($"  ✗ {field.fieldName} ({field.targetComponent}) - {field.message}");
                 }
             }
 
-            if (validation.errors.Count > 0)
+            if(validation.errors.Count > 0)
             {
                 sb.AppendLine();
                 sb.AppendLine("错误信息:");
-                foreach (var error in validation.errors)
+                foreach (string error in validation.errors)
                 {
                     sb.AppendLine($"  - {error}");
                 }
@@ -478,15 +474,15 @@ namespace CUiAutoBind
     }
 
     /// <summary>
-    /// 批量绑定结果
+    ///     批量绑定结果
     /// </summary>
     public class BindingResult
     {
-        public int successCount;
-        public int failureCount;
-        public List<string> successList = new List<string>();
-        public List<string> failureList = new List<string>();
         public List<string> errors = new List<string>();
+        public int failureCount;
+        public List<string> failureList = new List<string>();
+        public int successCount;
+        public List<string> successList = new List<string>();
 
         public override string ToString()
         {
@@ -495,26 +491,26 @@ namespace CUiAutoBind
     }
 
     /// <summary>
-    /// 绑定验证结果
+    ///     绑定验证结果
     /// </summary>
     public class BindingValidation
     {
         public string autoBindName;
-        public string scriptType;
-        public bool isValid;
-        public List<BindingFieldStatus> validFields = new List<BindingFieldStatus>();
-        public List<BindingFieldStatus> invalidFields = new List<BindingFieldStatus>();
         public List<string> errors = new List<string>();
+        public List<BindingFieldStatus> invalidFields = new List<BindingFieldStatus>();
+        public bool isValid;
+        public string scriptType;
+        public List<BindingFieldStatus> validFields = new List<BindingFieldStatus>();
     }
 
     /// <summary>
-    /// 字段绑定状态
+    ///     字段绑定状态
     /// </summary>
     public class BindingFieldStatus
     {
         public string fieldName;
-        public string targetComponent;
         public bool isBound;
         public string message;
+        public string targetComponent;
     }
 }

@@ -1,11 +1,11 @@
-using UnityEngine;
-using UnityEditor;
 using System.IO;
+using UnityEditor;
+using UnityEngine;
 
 namespace CUiAutoBind
 {
     /// <summary>
-    /// 配置管理器，提供统一的配置加载和创建方法
+    ///     配置管理器，提供统一的配置加载和创建方法
     /// </summary>
     public static class ConfigManager
     {
@@ -13,12 +13,12 @@ namespace CUiAutoBind
         private const string CONFIG_FOLDER_PATH = "Assets/CUIBind/";
 
         /// <summary>
-        /// 加载配置（不创建）
+        ///     加载配置（不创建）
         /// </summary>
         public static UiBindConfig LoadConfig()
         {
             string[] guids = AssetDatabase.FindAssets("t:UiBindConfig");
-            if (guids.Length > 0)
+            if(guids.Length > 0)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guids[0]);
                 return AssetDatabase.LoadAssetAtPath<UiBindConfig>(path);
@@ -28,12 +28,12 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 加载或创建配置
+        ///     加载或创建配置
         /// </summary>
         public static UiBindConfig LoadOrCreateConfig()
         {
             UiBindConfig config = LoadConfig();
-            if (config != null)
+            if(config != null)
                 return config;
 
             // 没有找到配置，创建新配置
@@ -41,12 +41,12 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 创建默认配置
+        ///     创建默认配置
         /// </summary>
         public static UiBindConfig CreateDefaultConfig()
         {
             // 确保目录存在
-            if (!Directory.Exists(CONFIG_FOLDER_PATH))
+            if(!Directory.Exists(CONFIG_FOLDER_PATH))
             {
                 Directory.CreateDirectory(CONFIG_FOLDER_PATH);
                 AssetDatabase.Refresh();
@@ -62,12 +62,12 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 重新生成配置
+        ///     重新生成配置
         /// </summary>
         public static UiBindConfig RegenerateConfig()
         {
             // 删除旧配置
-            if (File.Exists(CONFIG_ASSET_PATH))
+            if(File.Exists(CONFIG_ASSET_PATH))
             {
                 AssetDatabase.DeleteAsset(CONFIG_ASSET_PATH);
             }

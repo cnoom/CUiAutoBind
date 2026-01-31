@@ -1,19 +1,22 @@
+using System;
 using System.IO;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace CUiAutoBind
 {
     /// <summary>
-    /// 字符串工具类
+    ///     字符串工具类
     /// </summary>
     public static class StringUtil
     {
         /// <summary>
-        /// 获取安全的类名
+        ///     获取安全的类名
         /// </summary>
         public static string GetSafeClassName(string gameObjectName)
         {
-            if (string.IsNullOrEmpty(gameObjectName))
+            if(string.IsNullOrEmpty(gameObjectName))
                 return "AutoBindUI";
 
             string className = gameObjectName;
@@ -26,7 +29,7 @@ namespace CUiAutoBind
             className = className.Replace(" ", "");
 
             // 首字母大写（确保字符串不为空）
-            if (!string.IsNullOrEmpty(className))
+            if(!string.IsNullOrEmpty(className))
             {
                 className = char.ToUpper(className[0]) + className[1..];
             }
@@ -35,36 +38,36 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 转换为驼峰命名
+        ///     转换为驼峰命名
         /// </summary>
         public static string ToCamelCase(string str)
         {
-            if (string.IsNullOrEmpty(str))
+            if(string.IsNullOrEmpty(str))
                 return str;
 
             return char.ToLower(str[0]) + str[1..];
         }
 
         /// <summary>
-        /// 获取组件类型名称
+        ///     获取组件类型名称
         /// </summary>
-        public static string GetComponentTypeName(System.Type type)
+        public static string GetComponentTypeName(Type type)
         {
-            if (type == null)
+            if(type == null)
                 return "Component";
 
             // 处理 Unity 内置类型
-            if (type == typeof(UnityEngine.UI.Button)) return "Button";
-            if (type == typeof(UnityEngine.UI.Text)) return "Text";
-            if (type == typeof(UnityEngine.UI.Image)) return "Image";
-            if (type == typeof(UnityEngine.UI.Toggle)) return "Toggle";
-            if (type == typeof(UnityEngine.UI.Slider)) return "Slider";
-            if (type == typeof(UnityEngine.UI.ScrollRect)) return "ScrollRect";
-            if (type == typeof(UnityEngine.Transform)) return "Transform";
-            if (type == typeof(UnityEngine.GameObject)) return "GameObject";
+            if(type == typeof(Button)) return "Button";
+            if(type == typeof(Text)) return "Text";
+            if(type == typeof(Image)) return "Image";
+            if(type == typeof(Toggle)) return "Toggle";
+            if(type == typeof(Slider)) return "Slider";
+            if(type == typeof(ScrollRect)) return "ScrollRect";
+            if(type == typeof(Transform)) return "Transform";
+            if(type == typeof(GameObject)) return "GameObject";
 
             // 处理泛型类型
-            if (type.IsGenericType)
+            if(type.IsGenericType)
             {
                 return type.Name.Split('`')[0];
             }

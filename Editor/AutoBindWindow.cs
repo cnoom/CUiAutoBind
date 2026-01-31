@@ -1,12 +1,13 @@
-using UnityEngine;
-using UnityEditor;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEditor;
+using UnityEngine;
 
 namespace CUiAutoBind
 {
     /// <summary>
-    /// CUIBind 主编辑器窗口
+    ///     CUIBind 主编辑器窗口
     /// </summary>
     public class AutoBindWindow : EditorWindow
     {
@@ -14,16 +15,10 @@ namespace CUiAutoBind
         private Vector2 scrollPosition;
         private Vector2 suffixScrollPosition;
 
-        [MenuItem("Tools/CUIBind/打开窗口", false, 10)]
-        public static void ShowWindow()
-        {
-            GetWindow<AutoBindWindow>("CUIBind");
-        }
-
         private void OnGUI()
         {
             // 加载配置
-            if (config == null)
+            if(config == null)
             {
                 config = ConfigManager.LoadConfig();
             }
@@ -41,14 +36,20 @@ namespace CUiAutoBind
             DrawBatchGenerateSection();
         }
 
+        [MenuItem("Tools/CUIBind/打开窗口", false, 10)]
+        public static void ShowWindow()
+        {
+            GetWindow<AutoBindWindow>("CUIBind");
+        }
+
         /// <summary>
-        /// 绘制配置部分
+        ///     绘制配置部分
         /// </summary>
         private void DrawConfigSection()
         {
             GUILayout.Label("配置", EditorStyles.boldLabel);
 
-            if (config != null)
+            if(config != null)
             {
                 SerializedObject serializedConfig = new SerializedObject(config);
 
@@ -67,7 +68,7 @@ namespace CUiAutoBind
 
                 EditorGUILayout.Space();
 
-                if (EditorGUI.EndChangeCheck())
+                if(EditorGUI.EndChangeCheck())
                 {
                     serializedConfig.ApplyModifiedProperties();
                     EditorUtility.SetDirty(config);
@@ -77,9 +78,9 @@ namespace CUiAutoBind
                 EditorGUILayout.Space();
 
                 // 重新生成配置按钮
-                if (GUILayout.Button("重新生成默认配置", GUILayout.Height(25)))
+                if(GUILayout.Button("重新生成默认配置", GUILayout.Height(25)))
                 {
-                    if (EditorUtility.DisplayDialog("确认", "确定要重新生成配置吗？当前配置将被覆盖。", "确定", "取消"))
+                    if(EditorUtility.DisplayDialog("确认", "确定要重新生成配置吗？当前配置将被覆盖。", "确定", "取消"))
                     {
                         config = ConfigManager.RegenerateConfig();
                     }
@@ -89,7 +90,7 @@ namespace CUiAutoBind
             {
                 EditorGUILayout.HelpBox("未找到配置文件", MessageType.Warning);
 
-                if (GUILayout.Button("创建默认配置", GUILayout.Height(30)))
+                if(GUILayout.Button("创建默认配置", GUILayout.Height(30)))
                 {
                     config = ConfigManager.CreateDefaultConfig();
                 }
@@ -97,7 +98,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 绘制后缀配置部分
+        ///     绘制后缀配置部分
         /// </summary>
         private void DrawSuffixConfigs(SerializedObject serializedConfig)
         {
@@ -113,7 +114,7 @@ namespace CUiAutoBind
             // 使用滚动视图显示列表
             suffixScrollPosition = EditorGUILayout.BeginScrollView(suffixScrollPosition, GUILayout.Height(200));
 
-            for (int i = 0; i < suffixConfigsProp.arraySize; i++)
+            for(var i = 0; i < suffixConfigsProp.arraySize; i++)
             {
                 SerializedProperty elementProp = suffixConfigsProp.GetArrayElementAtIndex(i);
 
@@ -123,9 +124,9 @@ namespace CUiAutoBind
                 EditorGUILayout.PropertyField(elementProp, new GUIContent($"规则 {i + 1}"), true);
 
                 // 删除按钮
-                if (GUILayout.Button("删除此规则", GUILayout.Height(20)))
+                if(GUILayout.Button("删除此规则", GUILayout.Height(20)))
                 {
-                    if (EditorUtility.DisplayDialog("确认删除", $"确定要删除规则 '{i + 1}' 吗？", "确定", "取消"))
+                    if(EditorUtility.DisplayDialog("确认删除", $"确定要删除规则 '{i + 1}' 吗？", "确定", "取消"))
                     {
                         suffixConfigsProp.DeleteArrayElementAtIndex(i);
                         break;
@@ -139,7 +140,7 @@ namespace CUiAutoBind
             EditorGUILayout.EndScrollView();
 
             // 添加新规则按钮
-            if (GUILayout.Button("添加后缀规则", GUILayout.Height(25)))
+            if(GUILayout.Button("添加后缀规则", GUILayout.Height(25)))
             {
                 suffixConfigsProp.arraySize++;
                 SerializedProperty newElement = suffixConfigsProp.GetArrayElementAtIndex(suffixConfigsProp.arraySize - 1);
@@ -149,22 +150,22 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 绘制批量生成部分
+        ///     绘制批量生成部分
         /// </summary>
         private void DrawBatchGenerateSection()
         {
             GUILayout.Label("批量生成", EditorStyles.boldLabel);
 
-            if (config == null || !config.IsValid())
+            if(config == null || !config.IsValid())
             {
                 EditorGUILayout.HelpBox("请先配置有效的生成路径", MessageType.Warning);
                 return;
             }
 
             // 扫描场景中的 AutoBind 组件
-            UiAutoBind[] autoBinds = GameObject.FindObjectsOfType<UiAutoBind>();
+            UiAutoBind[] autoBinds = FindObjectsOfType<UiAutoBind>();
 
-            if (autoBinds.Length == 0)
+            if(autoBinds.Length == 0)
             {
                 EditorGUILayout.HelpBox("场景中没有 AutoBind 组件", MessageType.Info);
                 return;
@@ -176,16 +177,16 @@ namespace CUiAutoBind
 
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-            foreach (var autoBind in autoBinds)
+            foreach (UiAutoBind autoBind in autoBinds)
             {
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
                 EditorGUILayout.LabelField(autoBind.gameObject.name, EditorStyles.boldLabel);
 
-                var validBindings = autoBind.GetValidBindings();
+                List<AutoBindData> validBindings = autoBind.GetValidBindings();
                 EditorGUILayout.LabelField($"绑定数量: {validBindings.Count}");
 
-                if (GUILayout.Button($"生成代码: {autoBind.gameObject.name}", GUILayout.Height(25)))
+                if(GUILayout.Button($"生成代码: {autoBind.gameObject.name}", GUILayout.Height(25)))
                 {
                     GenerateCodeFor(autoBind);
                 }
@@ -199,7 +200,7 @@ namespace CUiAutoBind
             EditorGUILayout.Space();
 
             // 全部生成按钮
-            if (GUILayout.Button("全部生成", GUILayout.Height(35)))
+            if(GUILayout.Button("全部生成", GUILayout.Height(35)))
             {
                 GenerateAllCode(autoBinds);
             }
@@ -207,27 +208,27 @@ namespace CUiAutoBind
             EditorGUILayout.Space();
 
             // 批量绑定按钮
-            if (GUILayout.Button("批量重新绑定", GUILayout.Height(35)))
+            if(GUILayout.Button("批量重新绑定", GUILayout.Height(35)))
             {
                 BatchRebind(autoBinds);
             }
 
             // 批量按命名约定自动绑定按钮
-            if (GUILayout.Button("批量按命名约定自动绑定", GUILayout.Height(35)))
+            if(GUILayout.Button("批量按命名约定自动绑定", GUILayout.Height(35)))
             {
                 BatchAutoBindByNamingConvention(autoBinds);
             }
         }
 
         /// <summary>
-        /// 为指定 AutoBind 生成代码
+        ///     为指定 AutoBind 生成代码
         /// </summary>
         private void GenerateCodeFor(UiAutoBind uiAutoBind)
         {
             CodeGenerator generator = new CodeGenerator(config);
-            var validBindings = uiAutoBind.GetValidBindings();
+            List<AutoBindData> validBindings = uiAutoBind.GetValidBindings();
 
-            if (validBindings.Count == 0)
+            if(validBindings.Count == 0)
             {
                 EditorUtility.DisplayDialog("提示", $"'{uiAutoBind.gameObject.name}' 没有有效的绑定数据", "确定");
                 return;
@@ -255,7 +256,7 @@ namespace CUiAutoBind
 
                 EditorUtility.DisplayDialog("完成", message.ToString(), "确定");
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 EditorUtility.ClearProgressBar();
                 EditorUtility.DisplayDialog("错误", $"代码生成失败: {e.Message}", "确定");
@@ -264,29 +265,29 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 生成所有代码
+        ///     生成所有代码
         /// </summary>
         private void GenerateAllCode(UiAutoBind[] autoBinds)
         {
-            int successCount = 0;
-            int failCount = 0;
+            var successCount = 0;
+            var failCount = 0;
             List<string> errorMessages = new List<string>();
 
             // 先生成所有代码
-            foreach (var autoBind in autoBinds)
+            foreach (UiAutoBind autoBind in autoBinds)
             {
                 try
                 {
                     CodeGenerator generator = new CodeGenerator(config);
-                    var validBindings = autoBind.GetValidBindings();
+                    List<AutoBindData> validBindings = autoBind.GetValidBindings();
 
-                    if (validBindings.Count > 0)
+                    if(validBindings.Count > 0)
                     {
                         generator.GenerateCode(autoBind.gameObject, validBindings);
                         successCount++;
                     }
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     failCount++;
                     errorMessages.Add($"{autoBind.gameObject.name}: {e.Message}");
@@ -295,15 +296,15 @@ namespace CUiAutoBind
             }
 
             // 等待脚本编译完成后自动绑定
-            if (successCount > 0)
+            if(successCount > 0)
             {
                 AssetDatabase.Refresh();
                 AutoBindBindingScheduler.EnqueueAll(autoBinds);
             }
 
 
-            string message = $"生成完成！\n成功: {successCount}\n失败: {failCount}";
-            if (errorMessages.Count > 0)
+            var message = $"生成完成！\n成功: {successCount}\n失败: {failCount}";
+            if(errorMessages.Count > 0)
             {
                 message += "\n\n错误信息:\n" + string.Join("\n", errorMessages);
             }
@@ -312,11 +313,11 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 批量重新绑定
+        ///     批量重新绑定
         /// </summary>
         private void BatchRebind(UiAutoBind[] autoBinds)
         {
-            if (autoBinds == null || autoBinds.Length == 0)
+            if(autoBinds == null || autoBinds.Length == 0)
             {
                 EditorUtility.DisplayDialog("提示", "没有找到 AutoBind 组件", "确定");
                 return;
@@ -326,25 +327,25 @@ namespace CUiAutoBind
             BindingResult result = codeBinder.BindMultiple(autoBinds);
 
             StringBuilder message = new StringBuilder();
-            message.AppendLine($"批量绑定完成！");
+            message.AppendLine("批量绑定完成！");
             message.AppendLine($"成功: {result.successCount}");
             message.AppendLine($"失败: {result.failureCount}");
 
-            if (result.failureList.Count > 0)
+            if(result.failureList.Count > 0)
             {
                 message.AppendLine();
                 message.AppendLine("失败列表:");
-                foreach (var name in result.failureList)
+                foreach (string name in result.failureList)
                 {
                     message.AppendLine($"  - {name}");
                 }
             }
 
-            if (result.errors.Count > 0)
+            if(result.errors.Count > 0)
             {
                 message.AppendLine();
                 message.AppendLine("错误详情:");
-                foreach (var error in result.errors)
+                foreach (string error in result.errors)
                 {
                     message.AppendLine($"  - {error}");
                 }
@@ -354,11 +355,11 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 批量按命名约定自动绑定
+        ///     批量按命名约定自动绑定
         /// </summary>
         private void BatchAutoBindByNamingConvention(UiAutoBind[] autoBinds)
         {
-            if (autoBinds == null || autoBinds.Length == 0)
+            if(autoBinds == null || autoBinds.Length == 0)
             {
                 EditorUtility.DisplayDialog("提示", "没有找到 AutoBind 组件", "确定");
                 return;
@@ -366,31 +367,31 @@ namespace CUiAutoBind
 
             // 加载配置
             UiBindConfig config = ConfigManager.LoadConfig();
-            if (config == null || config.suffixConfigs == null || config.suffixConfigs.Length == 0)
+            if(config == null || config.suffixConfigs == null || config.suffixConfigs.Length == 0)
             {
                 EditorUtility.DisplayDialog("错误", "请先在配置文件中添加命名规则", "确定");
                 return;
             }
 
-            int totalAdded = 0;
-            int totalSkipped = 0;
-            int totalNotFound = 0;
+            var totalAdded = 0;
+            var totalSkipped = 0;
+            var totalNotFound = 0;
 
             // 遍历所有AutoBind组件
-            foreach (var autoBind in autoBinds)
+            foreach (UiAutoBind autoBind in autoBinds)
             {
                 try
                 {
                     Undo.RecordObject(autoBind, "Batch Auto Bind By Naming Convention");
 
                     // 执行自动绑定
-                    int addedCount = 0;
-                    int skippedCount = 0;
-                    int notFoundCount = 0;
+                    var addedCount = 0;
+                    var skippedCount = 0;
+                    var notFoundCount = 0;
 
                     AutoBindByNamingConventionRecursive(autoBind.transform, autoBind, config, ref addedCount, ref skippedCount, ref notFoundCount);
 
-                    if (addedCount > 0 || skippedCount > 0 || notFoundCount > 0)
+                    if(addedCount > 0 || skippedCount > 0 || notFoundCount > 0)
                     {
                         EditorUtility.SetDirty(autoBind);
                     }
@@ -399,7 +400,7 @@ namespace CUiAutoBind
                     totalSkipped += skippedCount;
                     totalNotFound += notFoundCount;
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Debug.LogError($"批量绑定失败: {autoBind.gameObject.name} - {e.Message}");
                 }
@@ -410,12 +411,12 @@ namespace CUiAutoBind
 
             // 显示结果
             StringBuilder message = new StringBuilder();
-            message.AppendLine($"批量自动绑定完成！");
+            message.AppendLine("批量自动绑定完成！");
             message.AppendLine();
-            message.AppendLine($"总计:");
+            message.AppendLine("总计:");
             message.AppendLine($"  ✓ 新增绑定: {totalAdded}");
             message.AppendLine($"  ○ 已存在（跳过）: {totalSkipped}");
-            if (totalNotFound > 0)
+            if(totalNotFound > 0)
             {
                 message.AppendLine($"  ✗ 未找到组件: {totalNotFound}");
             }
@@ -425,7 +426,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 递归按命名约定自动绑定
+        ///     递归按命名约定自动绑定
         /// </summary>
         private void AutoBindByNamingConventionRecursive(Transform current, UiAutoBind parentUiAutoBind, UiBindConfig config, ref int addedCount, ref int skippedCount, ref int notFoundCount)
 

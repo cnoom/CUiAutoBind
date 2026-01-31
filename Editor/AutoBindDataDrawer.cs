@@ -1,12 +1,12 @@
-using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 namespace CUiAutoBind
 {
     /// <summary>
-    /// AutoBindData 的自定义属性绘制器，提供组件类型下拉选择
+    ///     AutoBindData 的自定义属性绘制器，提供组件类型下拉选择
     /// </summary>
     [CustomPropertyDrawer(typeof(AutoBindData))]
     public class AutoBindDataDrawer : PropertyDrawer
@@ -25,13 +25,13 @@ namespace CUiAutoBind
             EditorGUI.PropertyField(componentRect, componentProp, GUIContent.none);
 
             // 选择按钮
-            if (GUI.Button(selectButtonRect, "选择"))
+            if(GUI.Button(selectButtonRect, "选择"))
             {
                 ShowComponentSelectionMenu(componentProp, fieldNameProp);
             }
 
             // 如果已选择组件，自动填充字段名（如果是空的）
-            if (componentProp.objectReferenceValue != null && string.IsNullOrEmpty(fieldNameProp.stringValue))
+            if(componentProp.objectReferenceValue != null && string.IsNullOrEmpty(fieldNameProp.stringValue))
             {
                 Component component = (Component)componentProp.objectReferenceValue;
                 string autoName = GenerateAutoFieldName(component);
@@ -53,7 +53,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 显示组件选择菜单
+        ///     显示组件选择菜单
         /// </summary>
         private void ShowComponentSelectionMenu(SerializedProperty componentProp, SerializedProperty fieldNameProp)
         {
@@ -61,20 +61,20 @@ namespace CUiAutoBind
             Component currentComponent = componentProp.objectReferenceValue as Component;
             GameObject targetObject = currentComponent != null ? currentComponent.gameObject : Selection.activeGameObject;
 
-            if (targetObject == null)
+            if(targetObject == null)
             {
                 EditorUtility.DisplayDialog("提示", "请先选择一个 GameObject", "确定");
                 return;
             }
 
             // 获取组件列表：当前对象的组件
-            var componentList = new List<Component>();
+            List<Component> componentList = new List<Component>();
 
             // 获取当前对象上的所有组件
             Component[] selfComponents = targetObject.GetComponents<Component>();
             componentList.AddRange(selfComponents);
 
-            if (componentList.Count == 0)
+            if(componentList.Count == 0)
             {
                 EditorUtility.DisplayDialog("提示", "该 GameObject 上没有可绑定的组件", "确定");
                 return;
@@ -92,27 +92,27 @@ namespace CUiAutoBind
             menu.AddSeparator("");
 
             // 按组件类型分组
-            var groupedComponents = componentList
+            List<Component> groupedComponents = componentList
                 .Where(c => c != null)
                 .OrderBy(c => c.GetType().Name)
-                .ThenBy(c => c.gameObject == targetObject ? 0 : 1)  // 当前对象的组件在前
+                .ThenBy(c => c.gameObject == targetObject ? 0 : 1) // 当前对象的组件在前
                 .ThenBy(c => c.name)
                 .ToList();
 
-            foreach (var component in groupedComponents)
+            foreach (Component component in groupedComponents)
             {
                 string componentType = component.GetType().Name;
                 string componentName = component.name;
 
                 // 检查是否是子对象的 AutoBind 组件
-                bool isChildAutoBind = (component is UiAutoBind) && (component.gameObject != targetObject);
+                bool isChildAutoBind = component is UiAutoBind && component.gameObject != targetObject;
 
-                bool isSelected = (currentComponent == component);
+                bool isSelected = currentComponent == component;
 
                 // 为子对象的 AutoBind 添加标记
                 string prefix = isChildAutoBind ? "📦 " : "";
                 string gameObjectPath = isChildAutoBind ? $" [{GetRelativePath(targetObject, component.gameObject)}]" : "";
-                string menuPath = $"{prefix}{componentType}{gameObjectPath} ({componentName})";
+                var menuPath = $"{prefix}{componentType}{gameObjectPath} ({componentName})";
 
                 menu.AddItem(new GUIContent(menuPath), isSelected, () =>
                 {
@@ -120,7 +120,7 @@ namespace CUiAutoBind
                     componentProp.serializedObject.ApplyModifiedProperties();
 
                     // 自动生成字段名
-                    if (string.IsNullOrEmpty(fieldNameProp.stringValue))
+                    if(string.IsNullOrEmpty(fieldNameProp.stringValue))
                     {
                         fieldNameProp.stringValue = GenerateAutoFieldName(component);
                         fieldNameProp.serializedObject.ApplyModifiedProperties();
@@ -132,7 +132,7 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 获取相对路径
+        ///     获取相对路径
         /// </summary>
         private string GetRelativePath(GameObject parent, GameObject child)
         {
@@ -147,7 +147,7 @@ namespace CUiAutoBind
             }
 
             // 检查是否找到了父对象
-            if (current == null)
+            if(current == null)
             {
                 return child.name; // 没找到父对象，返回名称
             }
@@ -156,11 +156,11 @@ namespace CUiAutoBind
         }
 
         /// <summary>
-        /// 生成自动字段名
+        ///     生成自动字段名
         /// </summary>
         private string GenerateAutoFieldName(Component component)
         {
-            if (component == null)
+            if(component == null)
                 return "";
 
             // 获取组件类型名称
@@ -170,7 +170,7 @@ namespace CUiAutoBind
             typeName = StringUtil.ToCamelCase(typeName);
 
             // 如果是 TextMeshPro 或其他长名称，使用缩写
-            if (typeName.Length > 15)
+            if(typeName.Length > 15)
             {
                 typeName = typeName.Replace("TextMeshPro", "TMP");
                 typeName = typeName.Replace("Component", "");

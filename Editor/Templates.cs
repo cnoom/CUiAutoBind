@@ -1,7 +1,7 @@
 ﻿namespace CUiAutoBind
 {
     /// <summary>
-    /// 代码生成模板常量
+    ///     代码生成模板常量
     /// </summary>
     internal static class Templates
     {
